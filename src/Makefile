@@ -11,7 +11,7 @@ OBJECTS=saf.o \
 	module_load.o service_register.o \
 	config.o
 
-saf:$(OBJECTS)
+saf: $(OBJECTS)
 	g++ $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -lsails -pthread -lprotobuf -ldl -ljsoncpp  -lsails  -lprofiler
 
 %.o: %.cc
