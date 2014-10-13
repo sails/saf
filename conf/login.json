@@ -1,0 +1,8 @@
+{
+    "login_url":"http://client.xiaoji001.com/clientapi/",
+    "login_test_url":"http://test.client.xiaoji001.com/clientapi/",
+    "login_test":0,
+    "login_key":"xiaoji&#@$",
+    "store_api_url":"192.168.1.121:9000",
+    "max_player":4
+}

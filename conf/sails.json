@@ -1,0 +1,9 @@
+{
+    "listen_port":8000,
+    "modules":[{"name":"test", "path":"../lib/service_test.so"}
+	       ,{"name":"login", "path":"../lib/login_module.so"}
+	       ,{"name":"rpcping", "path":"../lib/rpcping_module.so"}],
+    "max_connfd":2000,
+    "handle_thread_pool":3,
+    "handle_request_queue_size":1000
+}

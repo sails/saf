@@ -1,0 +1,14 @@
+option java_package = "com.xiaoji.net";
+package sails;
+
+option cc_generic_services=true;
+option java_generic_services=true;
+
+
+message PingMessage {
+  required int64 time = 1;
+}
+
+service PingService {
+  rpc ping(PingMessage) returns (PingMessage);
+}

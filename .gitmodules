@@ -1,0 +1,3 @@
+[submodule "src/sails"]
+	path = src/sails
+	url = https://github.com/sails/sails.git

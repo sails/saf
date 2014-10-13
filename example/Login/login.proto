@@ -1,0 +1,50 @@
+option java_package = "com.xiaoji.net";
+package sails;
+
+option cc_generic_services=true;
+option java_generic_services=true;
+
+message LoginRequest {
+  required string username = 1;
+  required string ticket = 2;
+  required int32 roomid = 3;
+}
+
+message LoginResponse {
+  enum ResultCode {
+    LOGIN_SUCCESS = 0;
+    LOGIN_CHECK_FAIL = 1;
+    LOGIN_GET_ROOM_FAIL = 2;
+    LOGIN_ROOM_FULL = 3;
+    LOGIN_ADD_SESSION_FAIL = 4;
+    LOGIN_OTHER_ERR = 10;
+  }
+  required ResultCode code = 1;
+  optional int32 roomid = 2;
+  optional string ip = 3;
+  optional int32 port = 4;
+  optional string session = 5;
+}
+
+message LogoutRequest {
+  required string session = 1;
+}
+
+message LogoutResponse {
+  enum ResultCode {
+    LOGOUT_SUCCESS = 0;
+    LOGOUT_ERR = 1;
+  }
+  required ResultCode code = 1;
+}
+
+
+message LoginDelayMessage {
+  required int64 time;
+}
+
+service LoginService {
+  rpc login(LoginRequest) returns(LoginResponse);
+  rpc logout(LogoutRequest) returns (LogoutResponse);
+  rpc delay(LoginDelayMessage) returns (LoginDelayMessage);
+}
