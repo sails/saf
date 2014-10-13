@@ -13,9 +13,6 @@
 
 namespace sails {
 
-sails::log::Logger serverlog(log::Logger::LOG_LEVEL_DEBUG,
-                             "./log/server.log", log::Logger::SPLIT_DAY);
-
 Server::Server(int netThreadNum) :
     sails::net::EpollServer<net::PacketCommon>(netThreadNum){
     
