@@ -30,7 +30,7 @@ Server::Server(int netThreadNum) :
 }
 
 
-net::PacketCommon* Server::parse(
+net::PacketCommon* Server::Parse(
     std::shared_ptr<sails::net::Connector> connector) {
 
   if (connector->readable() < sizeof(net::PacketCommon)) {
@@ -43,7 +43,7 @@ net::PacketCommon* Server::parse(
     return NULL;
   }
   if (packet != NULL) {
-    int packetlen = packet->len;
+    uint32_t packetlen = packet->len;
     if (packetlen < sizeof(net::PacketCommon)) {
       return NULL;
     }

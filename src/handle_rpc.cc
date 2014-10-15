@@ -32,16 +32,14 @@ void HandleRPC::do_handle(net::PacketCommon *request,
     if (request->type.opcode == net::PACKET_PROTOBUF_CALL ||
         request->type.opcode == net::PACKET_PROTOBUF_RET) {
       decode_protobuf((net::PacketRPC*)request, 
-                      (net::ResponseContent*)response, chain);
+                      (net::ResponseContent*)response);
     }
     chain->do_handle(request, response);
   }
 }
 
 void HandleRPC::decode_protobuf(net::PacketRPC *request,
-                                net::ResponseContent *response,
-                                base::HandleChain<net::PacketCommon *,
-                                net::ResponseContent *> *chain) {
+                                net::ResponseContent *response) {
   string service_name(request->service_name);
   string method_name(request->method_name);
   int method_index = request->method_index;

@@ -26,10 +26,8 @@ class HandleRPC : public base::Handle<net::PacketCommon*,
                  base::HandleChain<net::PacketCommon*,
                  net::ResponseContent*> *chain);
 
-  void decode_protobuf(net::PacketRPC *brequest,
-                       net::ResponseContent *response,
-                       base::HandleChain<net::PacketCommon *,
-                       net::ResponseContent *> *chain);
+  void decode_protobuf(net::PacketRPC *request,
+                       net::ResponseContent *response);
   ~HandleRPC();
 };
 

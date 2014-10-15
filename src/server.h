@@ -27,7 +27,7 @@ class Server : public sails::net::EpollServer<net::PacketCommon> {
 
   ~Server();
 
-  net::PacketCommon* parse(
+  net::PacketCommon* Parse(
       std::shared_ptr<sails::net::Connector> connector);
 
  private:

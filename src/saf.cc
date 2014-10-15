@@ -26,8 +26,8 @@ void sails_signal_handle(int signo, siginfo_t *info, void *ext) {
   switch(signo) {
     case SIGINT:
       {
-        server.stopNetThread();
-        server.stopHandleThread();
+        server.StopNetThread();
+        server.StopHandleThread();
         isRun = false;
 
         break;
@@ -47,13 +47,13 @@ void sails_init(int argc, char *argv[]) {
   }
 
   // 初始化server
-  server.createEpoll();
+  server.CreateEpoll();
 
-  server.bind(8000);
-  server.startNetThread();
+  server.Bind(8000);
+  server.StartNetThread();
     
-  server.add_handle(&handle);
-  server.startHandleThread();
+  server.AddHandle(&handle);
+  server.StartHandleThread();
 }
 
 
