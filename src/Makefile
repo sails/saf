@@ -9,7 +9,7 @@ OBJECTS=saf.o \
 	server.o \
 	handle_rpc.o \
 	module_load.o service_register.o \
-	config.o
+	config.o monitor.o
 
 saf: $(OBJECTS)
 	g++ $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -lsails -pthread -lprotobuf -ldl -ljsoncpp  -lsails  -lprofiler

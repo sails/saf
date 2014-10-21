@@ -76,7 +76,7 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
     if (len <= 1000) {
       connector.send();
     }else {
-      printf("error len:%d\n", len)
+      printf("error len:%d\n", len);
     }
 
     int n = connector.read();

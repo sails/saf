@@ -14,11 +14,13 @@
 #include "server.h"
 #include <signal.h>
 #include <gperftools/profiler.h>
+#include "monitor.h"
 
 using namespace sails;
 
 bool isRun = true;
 Server server(1);
+Monitor* monitor;
 HandleImpl handle(&server);
 
 
@@ -54,6 +56,9 @@ void sails_init(int argc, char *argv[]) {
     
   server.AddHandle(&handle);
   server.StartHandleThread();
+  
+  monitor = new Monitor(&server, 8001);
+  monitor->Run();
 }
 
 
