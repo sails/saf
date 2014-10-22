@@ -20,10 +20,11 @@
 
 namespace sails {
 
+class HandleImpl;
 
-class Server : public sails::net::EpollServer<net::PacketCommon> {
+class Server : public sails::net::EpollServer<net::PacketCommon, HandleImpl> {
  public:
-  Server(int netThreadNum);
+  Server();
 
   ~Server();
 
@@ -40,9 +41,9 @@ class Server : public sails::net::EpollServer<net::PacketCommon> {
 
 
 class HandleImpl
-    : public sails::net::HandleThread<sails::net::PacketCommon> {
+    : public sails::net::HandleThread<sails::net::PacketCommon, HandleImpl> {
  public:
-  HandleImpl(sails::net::EpollServer<sails::net::PacketCommon>* server);
+  HandleImpl(sails::net::EpollServer<sails::net::PacketCommon, HandleImpl>* server);
     
   void handle(const sails::net::TagRecvData<net::PacketCommon> &recvData);
 };

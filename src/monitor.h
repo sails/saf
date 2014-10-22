@@ -59,7 +59,6 @@ class Monitor {
   bool isTerminate;
   sails::Server* server;
   sails::net::HttpServer* http_server;
-  sails::net::HttpServerHandle* handle;
   ServerStatProcessor* processor;
 };
 

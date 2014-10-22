@@ -13,8 +13,8 @@
 
 namespace sails {
 
-Server::Server(int netThreadNum) :
-    sails::net::EpollServer<net::PacketCommon>(netThreadNum){
+Server::Server() :
+    sails::net::EpollServer<net::PacketCommon, HandleImpl>(){
     
   // 得到配置的模块
   config.get_modules(&modules_name);
@@ -89,8 +89,8 @@ Server::~Server() {
 
 
 HandleImpl::HandleImpl(
-    sails::net::EpollServer<sails::net::PacketCommon>* server)
-    :sails::net::HandleThread<sails::net::PacketCommon>(server) {
+    sails::net::EpollServer<sails::net::PacketCommon, HandleImpl>* server)
+    :sails::net::HandleThread<sails::net::PacketCommon, HandleImpl>(server) {
     
 }
 

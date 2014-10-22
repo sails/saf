@@ -34,14 +34,6 @@ Monitor::Monitor(sails::Server* server, int port) {
 }
 
 Monitor::~Monitor() {
-  if (http_server != NULL) {
-    delete http_server;
-    http_server = NULL;
-  }
-  if (handle != NULL) {
-    delete handle;
-    handle = NULL;
-  }
   if (processor != NULL) {
     delete processor;
     processor = NULL;
@@ -50,6 +42,11 @@ Monitor::~Monitor() {
     Terminate();
     Join();
   }
+  if (http_server != NULL) {
+    delete http_server;
+    http_server = NULL;
+  }
+
 }
 
 void Monitor::Run() {
@@ -58,6 +55,7 @@ void Monitor::Run() {
   status = Monitor::RUNING;
 }
 void Monitor::Terminate() {
+  http_server->Stop();
   isTerminate = true;
 }
 void Monitor::Join() {
@@ -70,16 +68,8 @@ void Monitor::Join() {
 }
 
 void Monitor::Start(Monitor* monitor) {
-  monitor->http_server = new sails::net::HttpServer(2);
-  monitor->http_server->CreateEpoll();
-  monitor->http_server->Bind(monitor->port);
-
-  monitor->http_server->StartNetThread();
-
-  monitor->handle = new sails::net::HttpServerHandle(monitor->http_server);
-  monitor->http_server->AddHandle(monitor->handle);
-  monitor->http_server->StartHandleThread();
-  
+  monitor->http_server = new sails::net::HttpServer();
+  monitor->http_server->Init(monitor->port, 1, 10, 1);
   // 请求处理器
   monitor->processor = new ServerStatProcessor(monitor->server);
   HTTPBIND(monitor->http_server, "/serverstat", monitor->processor, ServerStatProcessor::serverstat);

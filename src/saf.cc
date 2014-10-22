@@ -19,19 +19,19 @@
 using namespace sails;
 
 bool isRun = true;
-Server server(1);
+Server server;
 Monitor* monitor;
-HandleImpl handle(&server);
 
 
 void sails_signal_handle(int signo, siginfo_t *info, void *ext) {
   switch(signo) {
     case SIGINT:
       {
-        server.StopNetThread();
-        server.StopHandleThread();
+        server.Stop();
         isRun = false;
 
+        delete monitor;
+        
         break;
       }
   }
@@ -49,16 +49,11 @@ void sails_init(int argc, char *argv[]) {
   }
 
   // 初始化server
-  server.CreateEpoll();
+  server.Init(8000, 1, 10, 2);
 
-  server.Bind(8000);
-  server.StartNetThread();
-    
-  server.AddHandle(&handle);
-  server.StartHandleThread();
-  
   monitor = new Monitor(&server, 8001);
   monitor->Run();
+
 }
 
 
@@ -66,11 +61,11 @@ void sails_init(int argc, char *argv[]) {
 int main(int argc, char *argv[])
 {
   sails_init(argc, argv);
-  ProfilerStart("sails.prof");
+  //  ProfilerStart("sails.prof");
   while(isRun) {
     sleep(2);
   }
-  ProfilerStop();
+  //  ProfilerStop();
     
   return 0;
 }
