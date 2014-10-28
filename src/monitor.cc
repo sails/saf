@@ -70,9 +70,9 @@ void Monitor::Join() {
 void Monitor::Start(Monitor* monitor) {
   monitor->http_server = new sails::net::HttpServer();
   monitor->http_server->Init(monitor->port, 1, 10, 1);
-  // 请求处理器
+  // 请求处理器与url映射
   monitor->processor = new ServerStatProcessor(monitor->server);
-  HTTPBIND(monitor->http_server, "/serverstat", monitor->processor, ServerStatProcessor::serverstat);
+  HTTPBIND(monitor->http_server, "/stat", monitor->processor, ServerStatProcessor::serverstat);
 
   while (!monitor->isTerminate) {
     sleep(1);

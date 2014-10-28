@@ -30,6 +30,27 @@ saf application framework
 
 
 
+## 编译例子 ##
+
+1:下载源码,它依赖与sails公共库:
+
+    git clone --recursive https://github.com/sails/saf.git
+2:执行编辑脚本:
+
+    bash ./build.sh
+3:编译测试样例:
+
+    cd example
+    bash ./build_test.sh
+4:运行测试,比如运行echo_sync:
+
+    ./src/server
+    ./example/echo_sync/client
+
+5:增加子模块,配置conf/sails.json:
+在modules里增加一行,name是子模块名,path是子模块动态库的路径
+
+
 ## 性能 ##
 
 ### 测试一 ###
