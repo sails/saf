@@ -8,6 +8,7 @@ cd ../Login
 make login_client
 make logout_client
 make login_module.so
+cp login.json ../../conf/
 rm *.o
 
 cd ../rpcping
