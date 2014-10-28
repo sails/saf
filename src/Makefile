@@ -1,5 +1,6 @@
+SAILS			= ../deps/sails
 CFLAGS			= -std=c++11 -O0 -g -L../lib -L./ -W -Wall
-INCLUDE			= -I./
+INCLUDE			= -I./ -I../deps/ -I$(SAILS)
 
 INSTALL_PATH		= ../dist
 

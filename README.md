@@ -45,11 +45,11 @@ saf application framework
     git clone --recursive https://github.com/sails/saf.git
 2:执行编辑脚本:
 
-    bash ./build.sh
+    ./build.sh
 3:编译测试样例:
 
     cd example
-    bash ./build_test.sh
+    ./build_test.sh
 4:运行测试,比如运行echo_sync:
 
     ./src/server

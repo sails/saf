@@ -1,9 +1,9 @@
 #!/bin/bash
-cd src/sails/
+cd deps/sails/
 make
 cp libsails.a ../../lib
 make clean
-cd ..
+cd ../../src
 make
 make clean
 
