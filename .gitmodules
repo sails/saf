@@ -1,3 +1,6 @@
 [submodule "src/sails"]
 	path = src/sails
 	url = https://github.com/sails/sails.git
+[submodule "deps/ctemplate"]
+	path = deps/ctemplate
+	url = https://github.com/svn2github/ctemplate.git
