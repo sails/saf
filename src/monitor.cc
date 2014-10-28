@@ -10,18 +10,35 @@
 // Created: 2014-10-20 17:14:50
 
 #include "monitor.h"
+#include <ctemplate/template.h>
+#include "sails/system/cpu_usage.h"
+#include "sails/system/mem_usage.h"
 
 namespace sails {
 
 void ServerStatProcessor::serverstat(sails::net::HttpRequest& request,
                 sails::net::HttpResponse* response) {
-  std::string content;
+  ctemplate::TemplateDictionary dict("stat");
+  pid_t pid = getpid();
+  dict["PID"] = pid;
+  dict["PORT"] = server->ListenPort();
+  // cpu info
+  double cpu = 0;
+  if (sails::system::GetProcessCpuUsage(pid, 100, &cpu)) {
+    dict["CPU"] = cpu;
+  }
 
-  char listeninfo[20] = {'\0'};
-  snprintf(listeninfo, 20, "listen port:%d", server->ListenPort());
-  content += std::string(listeninfo);
+  // memory info
+  uint64_t vm_size, mem_size;
+  if (sails::system::GetMemoryUsedKiloBytes(pid, &vm_size, &mem_size)) {
+    dict["VMSIZE"] = vm_size;
+    dict["MEMSIZE"] = mem_size;
+  }
+  std::string body;
+  ctemplate::ExpandTemplate(
+      "../static/stat.html", ctemplate::DO_NOT_STRIP, &dict, &body);
   
-  response->SetBody(content.c_str());
+  response->SetBody(body.c_str());
 }
 
 Monitor::Monitor(sails::Server* server, int port) {
@@ -80,12 +97,3 @@ void Monitor::Start(Monitor* monitor) {
 }
 
 }  // namespace sails
-
-
-
-
-
-
-
-
-
