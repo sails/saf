@@ -1,0 +1,48 @@
+body {
+
+}
+.process_info {
+    margin-top:20px;
+    border: double;
+}
+.process_info div {
+    display:inline-block;
+    font-size:30;
+    margin-left:20px;
+    border-color: gray;
+    border-width: 3px;
+    border-style: solid;
+    margin: 10px;
+    padding:5px;
+}
+
+.process_info label {
+    display:block;
+    font-size:40;
+}
+
+.process_info table {
+    border: solid;
+    border-color: gray;
+}
+table.dataintable {
+    margin-top:10px;
+    border-collapse:collapse;
+    border:1px solid #aaa;
+    width:100%;
+}
+
+table.dataintable th {
+    vertical-align:baseline;
+    padding:5px 15px 5px 6px;
+    background-color:#d5d5d5;
+    border:1px solid #aaa;
+    text-align:left;
+}
+
+table.dataintable td {
+    vertical-align:text-top;
+    padding:6px 15px 6px 6px;
+    background-color:#efefef;
+    border:1px solid #aaa;
+}

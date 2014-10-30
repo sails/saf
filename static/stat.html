@@ -1,9 +1,65 @@
 <html>
+  <head>
+    <link rel="stylesheet" href="saf.css">
+  </head>
   <body>
-    <div><span>pid: {{PID}}</span></div>
-    <div>port: {{PORT}}</div>
-    <div>cpu: {{CPU}}</div>
-    <div>vm_size: {{VMSIZE}} kbyte</div>
-    <div>mem_size: {{MEMSIZE}} kbyte</div>
+    <div class="process_info">
+      <label>Basic Info</label>
+      <div>pid: {{PID}}</div>
+      <div>listen port: {{PORT}}</div>
+      <div>cpu: {{CPU}}</div>
+      <div>vm_size: {{VMSIZE}} KB</div>
+      <div>mem_size: {{MEMSIZE}} KB</div>
+    </div>
+    
+    <div class="process_info">
+      <label>Net Thread Info(num:{{NetThreadNum}})</label>
+      <table class="dataintable">
+	<tr>
+          <th>no</th>
+	  <th>status</th>
+	  <th>connector_num</th>
+	  <th>accept_times</th>
+	  <th>recv_queue_capacity</th>
+	  <th>recv_queue_size</th>
+	  <th>send_queue_capacity</th>
+	  <th>send_queue_size</th>
+	</tr>
+	{{#NetThreadSection}}
+	<tr>
+          <td>{{NetThread_NO}}</td>
+	  <td>{{NetThread_status}}</td>
+	  <td>{{NetThread_connector_num}}</td>
+	  <td>{{NetThread_accept_times}}</td>
+	  <td>{{NetThread_recv_queue_capacity}}</td>
+	  <td>{{NetThread_recv_queue_size}}</td>
+	  <td>{{NetThread_send_queue_capacity}}</td>
+	  <td>{{NetThread_send_queue_size}}</td>
+	</tr>
+	{{/NetThreadSection}}
+      </table>
+    </div>
+    
+    <div class="process_info">
+      <label>Hanle Thread Info(num:{{HandleThreadNum}})</label>
+      <table class="dataintable">
+	<tr>
+          <th>no</th>
+	  <th>status</th>
+	  <th>handle_times</th>
+	  <th>handle_queue_capacity</th>
+	  <th>handle_queue_size</th>
+	</tr>
+	{{#HandleThreadSection}}
+	<tr>
+          <td>{{HandleThread_NO}}</td>
+	  <td>{{HandleThread_status}}</td>
+	  <td>{{HandleThread_handle_times}}</td>
+	  <td>{{HandleThread_handle_queue_capacity}}</td>
+	  <td>{{HandleThread_handle_queue_size}}</td>
+	</tr>
+	{{/HandleThreadSection}}
+      </table>
+    </div>
   </body>
 </html>

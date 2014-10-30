@@ -78,3 +78,8 @@ saf application framework
 
 
 2w tps.因为客户端和服务器在同一台电脑上,所以测试结果会比实际更低.
+
+## 统计 ##
+内置http服务器的默认绑定在端口8001上,所以可以通过输入localhost:8001/stat来查看统计信息:
+
+![stat](./static/Screenshot/stat.png)
