@@ -1,5 +1,5 @@
 CFLAGS			= -std=c++11 -O0 -g -L../../../lib
-INCLUDE			= -I../../
+INCLUDE			= -I../../ -I../../../deps/
 
 clientcc=client_rpc_channel.cc client_rpc_controller.cc
 libclient.so:$(clientcc)

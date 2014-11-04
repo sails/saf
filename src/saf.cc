@@ -61,11 +61,11 @@ void sails_init(int argc, char *argv[]) {
 int main(int argc, char *argv[])
 {
   sails_init(argc, argv);
-  //  ProfilerStart("sails.prof");
+  ProfilerStart("sails.prof");
   while(isRun) {
     sleep(2);
   }
-  //  ProfilerStop();
+  ProfilerStop();
     
   return 0;
 }
