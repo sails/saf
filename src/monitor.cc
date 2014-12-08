@@ -2,7 +2,7 @@
 // All rights reserved.
 //
 // Official git repository and contact information can be found at
-// https://github.com/sails/sails and http://www.sailsxu.org/.
+// https://github.com/sails/sails and http://www.sailsxu.com/.
 //
 // Filename: monitor.cc
 //
