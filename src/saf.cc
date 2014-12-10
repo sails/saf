@@ -7,7 +7,6 @@
 // Created: 2014-10-13 17:10:36
 
 
-
 #include <sails/net/epoll_server.h>
 #include <sails/net/connector.h>
 #include <signal.h>
@@ -49,7 +48,7 @@ void sails_init(int argc, char *argv[]) {
   }
 
   // 初始化server
-  server.Init(8000, 1, 10, 2);
+  server.Init(8000, 1, 10, 2, true);
 
   monitor = new Monitor(&server, 8001);
   monitor->Run();
@@ -61,11 +60,11 @@ void sails_init(int argc, char *argv[]) {
 int main(int argc, char *argv[])
 {
   sails_init(argc, argv);
-  ProfilerStart("sails.prof");
+//  ProfilerStart("saf.prof");
   while(isRun) {
     sleep(2);
   }
-  ProfilerStop();
+//  ProfilerStop();
     
   return 0;
 }
