@@ -8,25 +8,23 @@
 
 
 
-#include "server.h"
-#include "handle_rpc.h"
+#include "src/server.h"
+#include "src/handle_rpc.h"
 
 namespace sails {
 
 Server::Server() :
-    sails::net::EpollServer<net::PacketCommon, HandleImpl>(){
-    
+    sails::net::EpollServer<net::PacketCommon>() {
   // 得到配置的模块
   config.get_modules(&modules_name);
   // 注册模块
   std::map<std::string, std::string>::iterator iter;
-  for(iter = modules_name.begin(); iter != modules_name.end()
-             ; iter++) {
-    if(!iter->second.empty()) {
+  for (iter = modules_name.begin(); iter != modules_name.end()
+              ; ++iter) {
+    if (!iter->second.empty()) {
       moduleLoad.load(iter->second);
     }
-  }     
-
+  }
 }
 
 
@@ -37,7 +35,8 @@ net::PacketCommon* Server::Parse(
     return NULL;
   }
   net::PacketCommon *packet = (net::PacketCommon*)connector->peek();
-  if (packet->type.opcode >= net::PACKET_MAX
+
+  if (packet == NULL || packet->type.opcode >= net::PACKET_MAX
       || packet->type.opcode <= net::PACKET_MIN) {  // error, and empty all data
     connector->retrieve(connector->readable());
     return NULL;
@@ -50,26 +49,27 @@ net::PacketCommon* Server::Parse(
     if (packetlen > PACKET_MAX_LEN) {
       connector->retrieve(packetlen);
       char errormsg[100] = {'\0'};
-      sprintf(errormsg, "receive a invalid packet len:%d", packetlen);
+      snprintf(errormsg, sizeof(errormsg),
+               "receive a invalid packet len:%d", packetlen);
       perror(errormsg);
-	    
     }
-    if(connector->readable() >= packetlen) {
+    if (connector->readable() >= packetlen) {
       net::PacketCommon *item = (net::PacketCommon*)malloc(packetlen);
       if (item == NULL) {
         char errormsg[100] = {'\0'};
-        sprintf(errormsg, "malloc failed due to copy receive data to a common packet len:%d", packetlen);
+        snprintf(errormsg, sizeof(errormsg),
+                 "malloc failed due to copy receive data "
+                 "to a common packet len:%d", packetlen);
         perror(errormsg);
         return NULL;
       }
-      memset(item, 0, packetlen);
       memcpy(item, packet, packetlen);
       connector->retrieve(packetlen);
 
       return item;
     }
   }
-    
+
   return NULL;
 }
 
@@ -79,33 +79,15 @@ Server::~Server() {
 }
 
 
-
-
-
-
-
-
-
-
-
-HandleImpl::HandleImpl(
-    sails::net::EpollServer<sails::net::PacketCommon, HandleImpl>* server)
-    :sails::net::HandleThread<sails::net::PacketCommon, HandleImpl>(server) {
-    
-}
-
-
-void HandleImpl::handle(
+void Server::handle(
     const sails::net::TagRecvData<net::PacketCommon> &recvData) {
-    
-    
+
   net::PacketCommon *request = recvData.data;
 
   net::ResponseContent content;
   memset(&content, 0, sizeof(net::ResponseContent));
 
-  base::HandleChain<net::PacketCommon*, 
-		    net::ResponseContent*> handle_chain;
+  base::HandleChain<net::PacketCommon*, net::ResponseContent*> handle_chain;
   HandleRPC proto_decode;
   handle_chain.add_handle(&proto_decode);
 
@@ -118,15 +100,14 @@ void HandleImpl::handle(
     response->common.type.opcode = net::PACKET_PROTOBUF_RET;
     response->common.len = response_len;
     memcpy(response->data, content.data, content.len);
-	
-    std::string buffer = std::string((char *)response, response_len);
-    server->send(buffer, recvData.ip, recvData.port, recvData.uid, recvData.fd);
+
+    send(reinterpret_cast<char*>(response), response_len,
+         recvData.ip, recvData.port, recvData.uid, recvData.fd);
 
     free(response);
   }
-
 }
 
 
 
-} // namespace sails
+}  // namespace sails

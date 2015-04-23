@@ -8,13 +8,13 @@
 
 
 
-#ifndef _SERVICE_REGISTER_H_
-#define _SERVICE_REGISTER_H_
+#ifndef SRC_SERVICE_REGISTER_H_
+#define SRC_SERVICE_REGISTER_H_
 
 #include <iostream>
 #include <string>
 #include <map>
-#include <google/protobuf/service.h>
+#include "google/protobuf/service.h"
 
 namespace sails {
 
@@ -26,7 +26,7 @@ class ServiceRegister {
 
   // module register by this is more easy
   static ServiceRegister* instance() {
-    if(_instance == 0) {
+    if (_instance == 0) {
       _instance = new ServiceRegister();
     }
     return _instance;
@@ -39,9 +39,9 @@ class ServiceRegister {
 };
 
 
-} // namespace sails
+}  // namespace sails
 
-#endif /* _SERVICE_REGISTER_H_ */
+#endif  // SRC_SERVICE_REGISTER_H_
 
 
 

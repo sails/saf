@@ -10,14 +10,13 @@
 // Author: sailsxu <sailsxu@gmail.com>
 // Created: 2014-10-20 16:38:13
 
-#include "sails/net/http_server.h"
-#include "server.h"
 #include <unistd.h>
-#include <thread>
+#include <thread>  // NOLINT
+#include "src/server.h"
+#include "sails/net/http_server.h"
 
-
-#ifndef MONITOR_H_
-#define MONITOR_H_
+#ifndef SRC_MONITOR_H_
+#define SRC_MONITOR_H_
 
 namespace sails {
 
@@ -28,7 +27,7 @@ class ServerStatProcessor {
     this->server = server;
   }
  public:
-  void serverstat(sails::net::HttpRequest& request,
+  void serverstat(sails::net::HttpRequest* request,
              sails::net::HttpResponse* response);
  private:
   sails::Server* server;
@@ -64,6 +63,6 @@ class Monitor {
 
 }  // namespace sails
 
-#endif  // MONITOR_H_
+#endif  // SRC_MONITOR_H_
 
 

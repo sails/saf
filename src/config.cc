@@ -8,11 +8,11 @@
 
 
 
-#include "config.h"
+#include "src/config.h"
+#include <unistd.h>
+#include <stdlib.h>
 #include <fstream>
-#include <sys/sysinfo.h>
-
-using namespace std;
+#include <utility>
 
 namespace sails {
 
@@ -20,27 +20,27 @@ Config::Config() {
   std::ifstream ifs;
   ifs.open("../conf/sails.json");
   Json::Reader reader;
-  if(!ifs) {
+  if (!ifs) {
     printf("open file failed\n");
     exit(0);
   }
-  if(!reader.parse(ifs, root)) {
+  if (!reader.parse(ifs, root)) {
     printf("parser failed\n");
     exit(0);
   }
   ifs.close();
 }
 
-map<string, string>* Config::get_modules(map<string, string> *modules)
-{
-  if(modules != NULL) {
+std::map<std::string, std::string>* Config::get_modules(
+    std::map<std::string, std::string> *modules) {
+  if (modules != NULL) {
     int module_size = root["modules"].size();
-    if(module_size >  0) {
-      for(int i = 0; i < module_size; i++) {
-        string name = root["modules"][i]["name"].asString();
-        string value = root["modules"][i]["path"].asString();
-        if(!name.empty() && !value.empty()) {
-          modules->insert(pair<string, string>(name, value));
+    if (module_size >  0) {
+      for (int i = 0; i < module_size; i++) {
+        std::string name = root["modules"][i]["name"].asString();
+        std::string value = root["modules"][i]["path"].asString();
+        if (!name.empty() && !value.empty()) {
+          modules->insert(std::pair<std::string, std::string>(name, value));
         }
       }
     }
@@ -49,13 +49,11 @@ map<string, string>* Config::get_modules(map<string, string> *modules)
   return modules;
 }
 
-int Config::get_listen_port()
-{
+int Config::get_listen_port() {
   return root["listen_port"].asInt();
 }
 
-int Config::get_max_connfd()
-{
+int Config::get_max_connfd() {
   if (root["max_connfd"].empty()) {
     return 2000;
   }
@@ -63,9 +61,9 @@ int Config::get_max_connfd()
 }
 
 int Config::get_handle_thread_pool() {
-  if(root["handle_thread_pool"].empty()) {
-    int processor_num = get_nprocs();
-    if(processor_num < 0) {
+  if (root["handle_thread_pool"].empty()) {
+    int64_t processor_num = sysconf(_SC_NPROCESSORS_CONF);
+    if (processor_num < 0) {
       return 2;
     }
     return processor_num;
@@ -74,10 +72,10 @@ int Config::get_handle_thread_pool() {
 }
 
 int Config::get_handle_request_queue_size() {
-  if(root["handle_request_queue_size"].empty()) {
+  if (root["handle_request_queue_size"].empty()) {
     return 1000;
   }
   return root["handle_request_queue_size"].asInt();
 }
 
-} // namespace sails
+}  // namespace sails

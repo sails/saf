@@ -1,7 +1,7 @@
 SAILS			= ../deps/sails
 CTEMPLATE		= ../deps/ctemplate/src
 CFLAGS			= -std=c++11 -O0 -g -L../lib -L./ -W -Wall
-INCLUDE			= -I./ -I../deps/ -I$(SAILS) -I$(CTEMPLATE)
+INCLUDE			= -I./ -I../ -I../deps/ -I$(SAILS) -I$(CTEMPLATE)
 
 INSTALL_PATH		= ../dist
 
@@ -14,7 +14,7 @@ OBJECTS=saf.o \
 	config.o monitor.o
 
 saf: $(OBJECTS)
-	g++ $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -lsails -pthread -lprotobuf -ldl -ljsoncpp  -lsails -lctemplate -lprofiler
+	g++ $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -pthread -lprotobuf -ldl -ljsoncpp  -lsails -lctemplate -lprofiler
 
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<

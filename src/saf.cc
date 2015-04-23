@@ -10,39 +10,35 @@
 #include <sails/net/epoll_server.h>
 #include <sails/net/connector.h>
 #include <signal.h>
-#include "server.h"
-#include <signal.h>
 #include <gperftools/profiler.h>
-#include "monitor.h"
-
-using namespace sails;
+#include "src/monitor.h"
+#include "src/server.h"
 
 bool isRun = true;
-Server server;
-Monitor* monitor;
+sails::Server server;
+sails::Monitor* monitor;
 
 
-void sails_signal_handle(int signo, siginfo_t *info, void *ext) {
-  switch(signo) {
+void sails_signal_handle(int signo, siginfo_t *, void *) {
+  switch (signo) {
     case SIGINT:
       {
         server.Stop();
         isRun = false;
 
         delete monitor;
-        
         break;
       }
   }
 }
 
-void sails_init(int argc, char *argv[]) {
+void sails_init(int, char **) {
   // signal kill
   struct sigaction act;
   act.sa_sigaction = sails_signal_handle;
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
-  if(sigaction(SIGINT, &act, NULL) == -1) {
+  if (sigaction(SIGINT, &act, NULL) == -1) {
     perror("sigaction error");
     exit(EXIT_FAILURE);
   }
@@ -50,21 +46,19 @@ void sails_init(int argc, char *argv[]) {
   // 初始化server
   server.Init(8000, 1, 10, 2, true);
 
-  monitor = new Monitor(&server, 8001);
+  monitor = new sails::Monitor(&server, 8001);
   monitor->Run();
-
 }
 
 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   sails_init(argc, argv);
 //  ProfilerStart("saf.prof");
-  while(isRun) {
+  while (isRun) {
     sleep(2);
   }
 //  ProfilerStop();
-    
+
   return 0;
 }

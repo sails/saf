@@ -8,8 +8,8 @@
 
 
 
-#ifndef _HANDLE_RPC_H_
-#define _HANDLE_RPC_H_
+#ifndef SRC_HANDLE_RPC_H_
+#define SRC_HANDLE_RPC_H_
 
 #include <sails/base/handle.h>
 #include <sails/net/packets.h>
@@ -21,8 +21,8 @@ namespace sails {
 class HandleRPC : public base::Handle<net::PacketCommon*,
                                       net::ResponseContent*> {
  public:
-  void do_handle(net::PacketCommon* request, 
-                 net::ResponseContent* response, 
+  void do_handle(net::PacketCommon* request,
+                 net::ResponseContent* response,
                  base::HandleChain<net::PacketCommon*,
                  net::ResponseContent*> *chain);
 
@@ -32,10 +32,10 @@ class HandleRPC : public base::Handle<net::PacketCommon*,
 };
 
 
-} //namespace sails
+}  // namespace sails
 
 
-#endif /* _HANDLE_RPC_H_ */
+#endif  // SRC_HANDLE_RPC_H_
 
 
 

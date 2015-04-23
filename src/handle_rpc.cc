@@ -8,30 +8,29 @@
 
 
 
-#include "handle_rpc.h"
+#include "src/handle_rpc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/message.h>
-#include "service_register.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/message.h"
+#include "src/service_register.h"
 
-using namespace std;
-using namespace google::protobuf;
+using namespace google::protobuf;  // NOLINT
 
 namespace sails {
 
-thread_local char data_str[MAX_CONTENT_LEN];
+__thread char data_str[MAX_CONTENT_LEN];
 
-void HandleRPC::do_handle(net::PacketCommon *request, 
-                          net::ResponseContent *response, 
+void HandleRPC::do_handle(net::PacketCommon *request,
+                          net::ResponseContent *response,
                           base::HandleChain<net::PacketCommon *,
                           net::ResponseContent *> *chain) {
-  if(request != NULL) {
+  if (request != NULL) {
     if (request->type.opcode == net::PACKET_PROTOBUF_CALL ||
         request->type.opcode == net::PACKET_PROTOBUF_RET) {
-      decode_protobuf((net::PacketRPC*)request, 
+      decode_protobuf((net::PacketRPC*)request,
                       (net::ResponseContent*)response);
     }
     chain->do_handle(request, response);
@@ -59,16 +58,16 @@ void HandleRPC::decode_protobuf(net::PacketRPC *request,
 
       static int PacketRPCSIZE = sizeof(net::PacketRPC);
       string msgstr(request->data, request->common.len-PacketRPCSIZE+1);
-	    
+
       request_msg->ParseFromString(msgstr);
-      service->CallMethod(method_desc,NULL, request_msg, response_mg, NULL);
+      service->CallMethod(method_desc, NULL, request_msg, response_mg, NULL);
       string response_content = response_mg->SerializeAsString();
 
       const char* data = response_content.c_str();
       int len = response_content.length();
 
       response->len = len;
-      memcpy(data_str, data, len);// don't need memset
+      memcpy(data_str, data, len);  // don't need memset
       response->data = data_str;
       delete request_msg;
       delete response_mg;
@@ -80,4 +79,4 @@ HandleRPC::~HandleRPC() {
   //    printf("delete handle_rpc\n");
 }
 
-} // namespace sails 
+}  // namespace sails

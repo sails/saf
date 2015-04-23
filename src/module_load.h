@@ -8,8 +8,8 @@
 
 
 
-#ifndef _MODULE_LOAD_H_
-#define _MODULE_LOAD_H_
+#ifndef SRC_MODULE_LOAD_H_
+#define SRC_MODULE_LOAD_H_
 
 #include <string>
 #include <list>
@@ -24,6 +24,6 @@ class ModuleLoad {
   std::list<void*> modules;
 };
 
-} //namespace sails
+}  // namespace sails
 
-#endif /* _MODULE_LOAD_H_ */
+#endif  // SRC_MODULE_LOAD_H_

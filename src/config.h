@@ -8,19 +8,18 @@
 
 
 
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
+#ifndef SRC_CONFIG_H_
+#define SRC_CONFIG_H_
 
+#include <json/json.h>
 #include <map>
 #include <string>
-#include <json/json.h>
 
 namespace sails {
 
 // parser configure file
 
-class Config
-{
+class Config {
  public:
   Config();
   std::map<std::string, std::string>* get_modules(
@@ -34,21 +33,7 @@ class Config
   Json::Value root;
 };
 
-} // namespace sails
+}  // namespace sails
 
-#endif /* _CONFIG_H_ */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#endif  // SRC_CONFIG_H_
 

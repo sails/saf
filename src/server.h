@@ -8,21 +8,23 @@
 
 
 
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef SRC_SERVER_H_
+#define SRC_SERVER_H_
 
 
-#include <sails/net/epoll_server.h>
-#include <sails/net/connector.h>
-#include <sails/net/packets.h>
-#include "config.h"
-#include "module_load.h"
+#include <string>
+#include <map>
+#include "sails/net/epoll_server.h"
+#include "sails/net/connector.h"
+#include "sails/net/packets.h"
+#include "src/config.h"
+#include "src/module_load.h"
 
 namespace sails {
 
 class HandleImpl;
 
-class Server : public sails::net::EpollServer<net::PacketCommon, HandleImpl> {
+class Server : public sails::net::EpollServer<net::PacketCommon> {
  public:
   Server();
 
@@ -30,6 +32,8 @@ class Server : public sails::net::EpollServer<net::PacketCommon, HandleImpl> {
 
   net::PacketCommon* Parse(
       std::shared_ptr<sails::net::Connector> connector);
+
+  void handle(const sails::net::TagRecvData<net::PacketCommon> &recvData);
 
  private:
   Config config;
@@ -39,21 +43,10 @@ class Server : public sails::net::EpollServer<net::PacketCommon, HandleImpl> {
 };
 
 
-
-class HandleImpl
-    : public sails::net::HandleThread<sails::net::PacketCommon, HandleImpl> {
- public:
-  HandleImpl(sails::net::EpollServer<sails::net::PacketCommon, HandleImpl>* server);
-    
-  void handle(const sails::net::TagRecvData<net::PacketCommon> &recvData);
-};
+}  // namespace sails
 
 
-
-} // namespace sails
-
-
-#endif /* SERVER_H */
+#endif  // SRC_SERVER_H_
 
 
 
