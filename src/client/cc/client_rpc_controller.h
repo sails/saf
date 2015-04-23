@@ -1,27 +1,40 @@
-#ifndef _CLIENT_RPC_CONTROLLER_H_
-#define _CLIENT_RPC_CONTROLLER_H_
+// Copyright (C) 2015 sails Authors.
+// All rights reserved.
+//
+// Official git repository and contact information can be found at
+// https://github.com/sails/sails and http://www.sailsxu.com/.
+//
+// Filename: client_rpc_controller.h
+//
+// Author: sailsxu <sailsxu@gmail.com>
+// Created: 2015-04-23 16:11:37
 
+
+
+#ifndef SRC_CLIENT_CC_CLIENT_RPC_CONTROLLER_H_
+#define SRC_CLIENT_CC_CLIENT_RPC_CONTROLLER_H_
+
+#include <string>
 #include <iostream>
-#include <google/protobuf/service.h>
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/service.h"
+#include "google/protobuf/descriptor.h"
 
 
 namespace sails {
 
-class RpcControllerImp : public google::protobuf::RpcController
-{
-	void SetFailed(const std::string & reason);
-	bool IsCanceled() const;
-	void NotifyOnCancel(google::protobuf::Closure * callback);
-	void Reset();
-	bool Failed() const;
-	std::string ErrorText() const;
-	void StartCancel();
+class RpcControllerImp : public google::protobuf::RpcController {
+  void SetFailed(const std::string & reason);
+  bool IsCanceled() const;
+  void NotifyOnCancel(google::protobuf::Closure * callback);
+  void Reset();
+  bool Failed() const;
+  std::string ErrorText() const;
+  void StartCancel();
 };
 
 
-} // namespace sails
+}  // namespace sails
 
 
 
-#endif /* _CLIENT_RPC_CONTROLLER_H_ */
+#endif  // SRC_CLIENT_CC_CLIENT_RPC_CONTROLLER_H_
