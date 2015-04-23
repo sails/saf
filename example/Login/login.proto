@@ -40,7 +40,7 @@ message LogoutResponse {
 
 
 message LoginDelayMessage {
-  required int64 time;
+  required int64 time = 1;
 }
 
 service LoginService {
