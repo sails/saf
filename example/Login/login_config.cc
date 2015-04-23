@@ -1,7 +1,5 @@
 #include "login_config.h"
 #include <fstream>
-#include <sys/sysinfo.h>
-
 
 namespace sails {
 

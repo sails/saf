@@ -35,6 +35,7 @@ void RpcControllerImp::Reset() {
 }
 
 bool RpcControllerImp::Failed() const {
+  return true;
 }
 
 string RpcControllerImp::ErrorText() const {
