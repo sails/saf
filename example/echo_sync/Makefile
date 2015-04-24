@@ -10,7 +10,16 @@ client: client.o addressbook.pb.o
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
 
+UNAME := $(shell uname)
+ifeq ($(UNAME), Linux)
+TARGET 			= service_test.so
+endif
+ifeq ($(UNAME), Darwin)
+TARGET 			= service_test.dylib
+endif
+
+
 servicecc=register.cc addressbook.pb.cc
-service_test.so: $(servicecc)
-	g++ -shared $(INCLUDE) -fPIC -o service_test.so $(servicecc) -lprotobuf
-	mv service_test.so $(LIBPATH)/service_test.so
+service_test: $(servicecc)
+	g++ -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) -L $(LIBPATH) -lsails -lprotobuf
+	mv $(TARGET) $(LIBPATH)/$(TARGET)

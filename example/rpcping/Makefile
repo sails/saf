@@ -10,7 +10,16 @@ client: client.o ping.pb.o
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
 
+UNAME := $(shell uname)
+ifeq ($(UNAME), Linux)
+TARGET 			= rpcping_module.so
+endif
+ifeq ($(UNAME), Darwin)
+TARGET 			= rpcping_module.dylib
+endif
+
+
 servicecc=register.cc ping.pb.cc
-rpcping_module.so: $(servicecc)
-	g++ $(CFLAGS) -shared $(INCLUDE) -fPIC -o rpcping_module.so $(servicecc) -L $(LIBPATH) -Wl,--whole-archive  -lsails -Wl,--no-whole-archive -lprotobuf -ljsoncpp  -lcurl
-	mv rpcping_module.so $(LIBPATH)/rpcping_module.so
+rpcping_module: $(servicecc)
+	g++ $(CFLAGS) -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) -L $(LIBPATH) -lsails -lprotobuf -ljsoncpp  -lcurl
+	mv $(TARGET) $(LIBPATH)/$(TARGET)
