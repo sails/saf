@@ -1,0 +1,61 @@
+option java_package = "com.xiaoji.net";
+package sails;
+
+option cc_generic_services=true;
+option java_generic_services=true;
+
+// 排行
+message RanklistRequest {
+  required int32 top = 1;
+}
+
+message RanklistResponse {
+  enum ResultCode {
+    SUCCESS = 0;
+    ERR = 1;
+  }
+  message RankItem {
+    required int32 rank = 1;
+    required string accountId = 2;
+    required int32 score = 3;
+  }
+  required ResultCode code = 1;
+  repeated RankItem ranklist = 2;
+}
+
+// 得到用户的信息
+message RankScoreRequest {
+  required string accountId = 1;
+}
+
+message RankScoreResponse {
+  enum ResultCode {
+    SUCCESS = 0;
+    ERR = 1;
+  }
+  required ResultCode code = 1;
+  required int32 rank = 2;
+  required int32 score = 3;
+}
+
+// 增加分数
+message RankAddScoreRequest {
+  required string accountId = 1;
+  required int32 score = 2;
+}
+
+message RankAddScoreResponse {
+  enum ResultCode {
+    SUCCESS = 0;
+    ERR = 1;
+  }
+  required ResultCode code = 1;
+  required int32 rank = 2;
+  required int32 score = 3;
+}
+
+service RankService {
+  rpc GetRanklist(RanklistRequest) returns(RanklistResponse);
+  rpc GetUserScore(RankScoreRequest) returns (RankScoreResponse);
+  rpc RankAddScore(RankAddScoreRequest) returns (RankAddScoreResponse);
+}
