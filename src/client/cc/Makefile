@@ -10,13 +10,13 @@ TARGET 			= libclient.so
 endif
 ifeq ($(UNAME), Darwin)
 TARGET 			= libclient.dylib
-CFLAGS			+= -Wl,-force_load ../../../lib/libsails.a
+CFLAGS			+= -install_name @rpath/libclient.dylib -Wl,-force_load ../../../lib/libsails.a
 endif
 
 
 
 clientcc=client_rpc_channel.cc client_rpc_controller.cc
-libclient.so:$(clientcc)
+libclient:$(clientcc)
 	g++ -shared -fPIC $(clientcc) -o $(TARGET) $(INCLUDE) $(CFLAGS)
 	mv $(TARGET) ../../../lib/$(TARGET)
 clean:
