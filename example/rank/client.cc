@@ -27,16 +27,18 @@ int main() {
   sails::RankService::Stub stub(&channel);
 
   printf("get top 10 from rank\n");
-  // 得到排行榜
-  sails::RanklistRequest request;
-  sails::RanklistResponse response;
-  request.set_top(10);
-  stub.GetRanklist(&controller, &request, &response, NULL);
-  if (response.code() == sails::RanklistResponse::SUCCESS) {
-    int size = response.ranklist_size();
-    for (int i = 0; i < size; i++) {
-      sails::RanklistResponse::RankItem item = response.ranklist(i);
-      printf("rank:%d score:%d\n", item.rank(), item.score());
+  // 得到排行榜(性能测试)
+  for (int i = 0; i < 1; i++) {
+    sails::RanklistRequest request;
+    sails::RanklistResponse response;
+    request.set_top(10);
+    stub.GetRanklist(&controller, &request, &response, NULL);
+    if (response.code() == sails::RanklistResponse::SUCCESS) {
+      int size = response.ranklist_size();
+      for (int i = 0; i < size; i++) {
+        sails::RanklistResponse::RankItem item = response.ranklist(i);
+        printf("rank:%d score:%d\n", item.rank(), item.score());
+      }
     }
   }
 
@@ -48,17 +50,21 @@ int main() {
   stub.GetUserScore(&controller, &scoreRequest, &scoreResponse, NULL);
   printf("score:%d rank:%d\n", scoreResponse.score(), scoreResponse.rank());
 
-  printf("add user(12345) score 10");
-  // 增加分数
-  sails::RankAddScoreRequest addRequest;
+  printf("add user(12345) score 10\n");
+  // 增加游戏结果
+  sails::RankAddFightResult addRequest;
   addRequest.set_accountid("12345");
-  addRequest.set_score(10);
-  sails::RankAddScoreResponse addResponse;
-  stub.RankAddScore(&controller, &addRequest, &addResponse, NULL);
-  printf("score:%d rank:%d\n", scoreResponse.score(), scoreResponse.rank());
+  addRequest.set_result(sails::RankAddFightResult::WIN);
+  addRequest.set_gameid(1);
+  addRequest.set_roomid(10);
+  addRequest.set_roomtype(10);
+  addRequest.set_overtime("201501001122");
+  sails::RankScoreResponse fightscoreResponse;
+  stub.AddFightResult(&controller, &addRequest, &fightscoreResponse, NULL);
+  printf("score:%d rank:%d\n",
+         fightscoreResponse.score(), fightscoreResponse.rank());
 
   google::protobuf::ShutdownProtobufLibrary();
-
   return 0;
 }
 

@@ -38,24 +38,23 @@ message RankScoreResponse {
   required int32 score = 3;
 }
 
-// 增加分数
-message RankAddScoreRequest {
-  required string accountId = 1;
-  required int32 score = 2;
-}
-
-message RankAddScoreResponse {
-  enum ResultCode {
-    SUCCESS = 0;
-    ERR = 1;
+// 增加对战结果
+message RankAddFightResult {
+  enum Result {
+    WIN = 0;
+    FAILED = 1;
+    ESCAPE = 2;
   }
-  required ResultCode code = 1;
-  required int32 rank = 2;
-  required int32 score = 3;
+  required Result result = 1;
+  required string accountId = 2;
+  required int32 gameId = 3;
+  required int32 roomId = 4;
+  required int32 roomtype = 5;
+  required string overtime = 6;
 }
 
 service RankService {
   rpc GetRanklist(RanklistRequest) returns(RanklistResponse);
   rpc GetUserScore(RankScoreRequest) returns (RankScoreResponse);
-  rpc RankAddScore(RankAddScoreRequest) returns (RankAddScoreResponse);
+  rpc AddFightResult(RankAddFightResult) returns (RankScoreResponse);
 }

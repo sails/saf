@@ -78,17 +78,35 @@ class RankServiceImp : public RankService {
     response->set_code(sails::RankScoreResponse::SUCCESS);
   }
 
-  // 增加分数
-  void RankAddScore(::google::protobuf::RpcController* controller,
-                    const ::sails::RankAddScoreRequest* request,
-                    ::sails::RankAddScoreResponse* response,
-                    ::google::protobuf::Closure* done) {
-    // 分数
-    response->set_score(
-        adduserscore(request->accountid().c_str(), request->score()));
-    // 排行
-    response->set_rank(getuserrank(request->accountid().c_str()));
-    response->set_code(sails::RankAddScoreResponse::SUCCESS);
+  // 增加对战结果
+  void AddFightResult(::google::protobuf::RpcController* controller,
+                      const ::sails::RankAddFightResult* request,
+                      ::sails::RankScoreResponse* response,
+                      ::google::protobuf::Closure* done) {
+    int score = 0;
+    if (request->result() == sails::RankAddFightResult::WIN) {
+      score = 3;
+    } else if (request->result() == sails::RankAddFightResult::FAILED) {
+      score = 2;
+    } else if (request->result() == sails::RankAddFightResult::ESCAPE) {
+      score = -1;
+    }
+    // 增加消息
+    char record[100] = {'\0'};
+    snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d",
+             request->accountid().c_str(), request->gameid(), request->roomid(),
+             request->roomtype(), request->overtime().c_str(),
+             request->result());
+    if (addFightRecord(record)) {
+      // 增加分数
+      response->set_score(
+          adduserscore(request->accountid().c_str(), score));
+      // 排行
+      response->set_rank(getuserrank(request->accountid().c_str()));
+      response->set_code(sails::RankScoreResponse::SUCCESS);
+    } else {
+      response->set_code(sails::RankScoreResponse::ERR);
+    }
   }
 
  private:
@@ -129,6 +147,20 @@ class RankServiceImp : public RankService {
     freeReplyObject(reply);
     return rank;
   }
+
+  bool addFightRecord(const char* record) {
+    bool result = false;
+    redisReply* reply =
+        reinterpret_cast<redisReply*>(redisCommand(
+            c, "rpush fightrecord %s", record));
+    if (reply->type != REDIS_REPLY_ERROR) {
+      result = true;
+    }
+    handleException(reply);
+    freeReplyObject(reply);
+    return result;
+  }
+
   void handleException(redisReply* reply) {
     if (reply->type == REDIS_REPLY_ERROR) {
       // 重连
