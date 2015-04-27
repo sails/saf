@@ -56,13 +56,13 @@ void RankServiceImp::GetRanklist(::google::protobuf::RpcController*,
   topnum = topnum > 50 ? 50:topnum;
   char keyname[20] = {'\0'};
   int type = 0;
-  if (request->type() == RanklistRequest::DAY) {
+  if (request->type() == TimeType::DAY) {
     snprintf(keyname, sizeof(keyname), "%s", rank_day);
     type = 1;
-  } else if (request->type() == RanklistRequest::WEEK) {
+  } else if (request->type() == TimeType::WEEK) {
     snprintf(keyname, sizeof(keyname), "%s", rank_week);
     type = 2;
-  } else if (request->type() == RanklistRequest::MONTH) {
+  } else if (request->type() == TimeType::MONTH) {
     snprintf(keyname, sizeof(keyname), "%s", rank_month);
     type = 3;
   }
@@ -80,7 +80,7 @@ void RankServiceImp::GetRanklist(::google::protobuf::RpcController*,
   }
   handleException(reply);
   freeReplyObject(reply);
-  response->set_code(sails::RanklistResponse::SUCCESS);
+  response->set_err_code(sails::ERR_CODE::SUCCESS);
 }
 
 // 得到自己的排行信息
@@ -89,18 +89,61 @@ void RankServiceImp::GetUserScore(::google::protobuf::RpcController*,
                                   ::sails::RankScoreResponse* response,
                                   ::google::protobuf::Closure*) {
   int type = 0;
-  if (request->type() == RankScoreRequest::DAY) {
+  if (request->type() == TimeType::DAY) {
     type = 1;
-  } else if (request->type() == RankScoreRequest::WEEK) {
+  } else if (request->type() == TimeType::WEEK) {
     type = 2;
-  } else if (request->type() == RankScoreRequest::MONTH) {
+  } else if (request->type() == TimeType::MONTH) {
     type = 3;
   }
   // 分数
   response->set_score(getuserscore(type, request->accountid().c_str()));
   // 排行
   response->set_rank(getuserrank(type, request->accountid().c_str()));
-  response->set_code(sails::RankScoreResponse::SUCCESS);
+  response->set_err_code(sails::ERR_CODE::SUCCESS);
+}
+
+// 得到自己的对战次数
+void RankServiceImp::GetUserFightTimes(::google::protobuf::RpcController*,
+                                       const ::sails::RankFightTimesRequest* request,
+                                       ::sails::RankFightTimesResponse* response,
+                                       ::google::protobuf::Closure*) {
+  bool result = true;
+  redisReply* reply = reinterpret_cast<redisReply*>(
+      redisCommand(c, "user_fight_failed_%s", request->accountid().c_str()));
+  int failedTimes = 0;
+  if (reply->type == REDIS_REPLY_STRING) {
+    sscanf(reply->str, "%10d", &failedTimes);
+  } else {
+    result = false;
+  }
+  handleException(reply);
+  freeReplyObject(reply);
+  reply = reinterpret_cast<redisReply*>(
+      redisCommand(c, "user_fight_win_%s", request->accountid().c_str()));
+  int winTimes = 0;
+  if (reply->type == REDIS_REPLY_STRING) {
+    sscanf(reply->str, "%10d", &winTimes);
+  } else {
+    result = false;
+  }
+  handleException(reply);
+  freeReplyObject(reply);
+  reply = reinterpret_cast<redisReply*>(
+      redisCommand(c, "user_fight_escape_%s", request->accountid().c_str()));
+  int escapeTimes = 0;
+  if (reply->type == REDIS_REPLY_STRING) {
+    sscanf(reply->str, "%10d", &escapeTimes);
+  } else {
+    result = false;
+  }
+  handleException(reply);
+  freeReplyObject(reply);
+  if (result) {
+    response->set_err_code(::sails::ERR_CODE::SUCCESS);
+  } else {
+    response->set_err_code(::sails::ERR_CODE::ERR);
+  }
 }
 
 // 增加对战结果
@@ -116,19 +159,21 @@ void RankServiceImp::AddFightResult(::google::protobuf::RpcController*,
   } else if (request->result() == sails::RankAddFightResultRequest::ESCAPE) {
     score = -1;
   }
-  // 增加消息
+  // 增加同步消息
   char record[100] = {'\0'};
   snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d",
            request->accountid().c_str(), request->gameid(), request->roomid(),
            request->roomtype(), request->overtime().c_str(),
            request->result());
   if (addFightRecord(record)) {
-    // 增加分数
+    // 增加胜负次数
+    adduserfighttimes(request->accountid().c_str(), request->result());
     printf("add user score\n");
+    // 增加分数
     adduserscore(request->accountid().c_str(), score);
-    response->set_code(sails::RankAddFightResultResponse::SUCCESS);
+    response->set_err_code(sails::ERR_CODE::SUCCESS);
   } else {
-    response->set_code(sails::RankAddFightResultResponse::ERR);
+    response->set_err_code(sails::ERR_CODE::ERR);
   }
 }
 
@@ -202,6 +247,31 @@ int RankServiceImp::adduserscore(const char* accountId, int score) {
   freeReplyObject(reply);
 
   return lastscore;
+}
+
+
+// 增加用户胜负次数
+  // isWin，-1负；1胜；-2逃跑
+int RankServiceImp::adduserfighttimes(
+    const char* accountId, RankAddFightResultRequest::Result result) {
+  char key[200] = {'\0'};
+  if (result == RankAddFightResultRequest::FAILED) {
+    snprintf(key, sizeof(key), "user_fight_failed_%s", accountId);
+  } else if (result == RankAddFightResultRequest::WIN) {
+    snprintf(key, sizeof(key), "user_fight_win_%s", accountId);
+  } else if (result == RankAddFightResultRequest::ESCAPE) {
+    snprintf(key, sizeof(key), "user_fight_escape_%s", accountId);
+  }
+
+  int times = 0;
+  redisReply* reply = reinterpret_cast<redisReply*>(
+      redisCommand(c, "INCR %s", key));
+  if (reply->type == REDIS_REPLY_INTEGER) {
+    times = reply->integer;
+  }
+  handleException(reply);
+  freeReplyObject(reply);
+  return times;
 }
 
 // 增加对战记录，用于通知后台

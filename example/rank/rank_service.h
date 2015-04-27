@@ -46,6 +46,11 @@ class RankServiceImp : public RankService {
                     ::sails::RankScoreResponse* response,
                     ::google::protobuf::Closure* done);
 
+  // 得到自己的对战次数
+  void GetUserFightTimes(::google::protobuf::RpcController* controller,
+                         const ::sails::RankFightTimesRequest* request,
+                         ::sails::RankFightTimesResponse* response,
+                         ::google::protobuf::Closure* done);
   // 增加对战结果
   void AddFightResult(::google::protobuf::RpcController* controller,
                       const ::sails::RankAddFightResultRequest* request,
@@ -61,6 +66,10 @@ class RankServiceImp : public RankService {
 
   // 增加用户分数,三个排行榜都要增加
   int adduserscore(const char* accountId, int score);
+
+  // 增加用户胜负次数
+  int adduserfighttimes(const char* accountId,
+                        RankAddFightResultRequest::Result result);
 
   // 增加对战记录，用于通知后台
   bool addFightRecord(const char* record);

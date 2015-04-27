@@ -4,50 +4,54 @@ package sails;
 option cc_generic_services=true;
 option java_generic_services=true;
 
+enum ERR_CODE {
+  SUCCESS = 0;
+  ERR = 1;
+}
+
+enum TimeType {
+  DAY = 0;
+  WEEK = 1;
+  MONTH = 2;
+}
+
 // 排行
 message RanklistRequest {
-  enum Type {
-    DAY = 0;
-    WEEK = 1;
-    MONTH = 2;
-  }
-  required Type type = 1;
+  required TimeType type = 1;
   required int32 top = 2;
 }
 
 message RanklistResponse {
-  enum ResultCode {
-    SUCCESS = 0;
-    ERR = 1;
-  }
   message RankItem {
     required int32 rank = 1;
     required string accountId = 2;
     required int32 score = 3;
   }
-  required ResultCode code = 1;
+  required ERR_CODE err_code = 1;
   repeated RankItem ranklist = 2;
 }
 
 // 得到用户的信息
 message RankScoreRequest {
-  enum Type {
-    DAY = 0;
-    WEEK = 1;
-    MONTH = 2;
-  }
-  required Type type = 1;
+  required TimeType type = 1;
   required string accountId = 2;
 }
 
 message RankScoreResponse {
-  enum ResultCode {
-    SUCCESS = 0;
-    ERR = 1;
-  }
-  required ResultCode code = 1;
+  required ERR_CODE err_code = 1;
   required int32 rank = 2;
   required int32 score = 3;
+}
+
+message RankFightTimesRequest {
+  required string accountId = 1;
+}
+
+message RankFightTimesResponse {
+  required ERR_CODE err_code = 1;
+  required int32 winTimes = 2;
+  required int32 failedTimes = 3;
+  required int32 escapeTimes = 4;
 }
 
 // 增加对战结果
@@ -66,15 +70,12 @@ message RankAddFightResultRequest {
 }
 
 message RankAddFightResultResponse {
-  enum ResultCode {
-    SUCCESS = 0;
-    ERR = 1;
-  }
-  required ResultCode code = 1;
+  required ERR_CODE err_code = 1;
 }
 
 service RankService {
   rpc GetRanklist(RanklistRequest) returns(RanklistResponse);
   rpc GetUserScore(RankScoreRequest) returns (RankScoreResponse);
+  rpc GetUserFightTimes(RankFightTimesRequest) returns (RankFightTimesResponse);
   rpc AddFightResult(RankAddFightResultRequest) returns (RankAddFightResultResponse);
 }

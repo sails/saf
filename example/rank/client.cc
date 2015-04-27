@@ -32,9 +32,9 @@ int main() {
     sails::RanklistRequest request;
     sails::RanklistResponse response;
     request.set_top(10);
-    request.set_type(sails::RanklistRequest::DAY);
+    request.set_type(sails::TimeType::DAY);
     stub.GetRanklist(&controller, &request, &response, NULL);
-    if (response.code() == sails::RanklistResponse::SUCCESS) {
+    if (response.err_code() == sails::ERR_CODE::SUCCESS) {
       int size = response.ranklist_size();
       for (int i = 0; i < size; i++) {
         sails::RanklistResponse::RankItem item = response.ranklist(i);
@@ -47,7 +47,7 @@ int main() {
   // 得到分数
   sails::RankScoreRequest scoreRequest;
   scoreRequest.set_accountid("12345");
-  scoreRequest.set_type(sails::RankScoreRequest::DAY);
+  scoreRequest.set_type(sails::TimeType::DAY);
   sails::RankScoreResponse scoreResponse;
   stub.GetUserScore(&controller, &scoreRequest, &scoreResponse, NULL);
   printf("score:%d rank:%d\n", scoreResponse.score(), scoreResponse.rank());
