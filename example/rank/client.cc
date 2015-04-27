@@ -32,6 +32,7 @@ int main() {
     sails::RanklistRequest request;
     sails::RanklistResponse response;
     request.set_top(10);
+    request.set_type(sails::RanklistRequest::DAY);
     stub.GetRanklist(&controller, &request, &response, NULL);
     if (response.code() == sails::RanklistResponse::SUCCESS) {
       int size = response.ranklist_size();
@@ -46,23 +47,22 @@ int main() {
   // 得到分数
   sails::RankScoreRequest scoreRequest;
   scoreRequest.set_accountid("12345");
+  scoreRequest.set_type(sails::RankScoreRequest::DAY);
   sails::RankScoreResponse scoreResponse;
   stub.GetUserScore(&controller, &scoreRequest, &scoreResponse, NULL);
   printf("score:%d rank:%d\n", scoreResponse.score(), scoreResponse.rank());
 
   printf("add user(12345) score 10\n");
   // 增加游戏结果
-  sails::RankAddFightResult addRequest;
+  sails::RankAddFightResultRequest addRequest;
   addRequest.set_accountid("12345");
-  addRequest.set_result(sails::RankAddFightResult::WIN);
+  addRequest.set_result(sails::RankAddFightResultRequest::WIN);
   addRequest.set_gameid(1);
   addRequest.set_roomid(10);
   addRequest.set_roomtype(10);
   addRequest.set_overtime("201501001122");
-  sails::RankScoreResponse fightscoreResponse;
+  sails::RankAddFightResultResponse fightscoreResponse;
   stub.AddFightResult(&controller, &addRequest, &fightscoreResponse, NULL);
-  printf("score:%d rank:%d\n",
-         fightscoreResponse.score(), fightscoreResponse.rank());
 
   google::protobuf::ShutdownProtobufLibrary();
   return 0;

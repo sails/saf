@@ -6,7 +6,13 @@ option java_generic_services=true;
 
 // 排行
 message RanklistRequest {
-  required int32 top = 1;
+  enum Type {
+    DAY = 0;
+    WEEK = 1;
+    MONTH = 2;
+  }
+  required Type type = 1;
+  required int32 top = 2;
 }
 
 message RanklistResponse {
@@ -25,7 +31,13 @@ message RanklistResponse {
 
 // 得到用户的信息
 message RankScoreRequest {
-  required string accountId = 1;
+  enum Type {
+    DAY = 0;
+    WEEK = 1;
+    MONTH = 2;
+  }
+  required Type type = 1;
+  required string accountId = 2;
 }
 
 message RankScoreResponse {
@@ -39,7 +51,7 @@ message RankScoreResponse {
 }
 
 // 增加对战结果
-message RankAddFightResult {
+message RankAddFightResultRequest {
   enum Result {
     WIN = 0;
     FAILED = 1;
@@ -53,8 +65,16 @@ message RankAddFightResult {
   required string overtime = 6;
 }
 
+message RankAddFightResultResponse {
+  enum ResultCode {
+    SUCCESS = 0;
+    ERR = 1;
+  }
+  required ResultCode code = 1;
+}
+
 service RankService {
   rpc GetRanklist(RanklistRequest) returns(RanklistResponse);
   rpc GetUserScore(RankScoreRequest) returns (RankScoreResponse);
-  rpc AddFightResult(RankAddFightResult) returns (RankScoreResponse);
+  rpc AddFightResult(RankAddFightResultRequest) returns (RankAddFightResultResponse);
 }
