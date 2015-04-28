@@ -104,13 +104,15 @@ void RankServiceImp::GetUserScore(::google::protobuf::RpcController*,
 }
 
 // 得到自己的对战次数
-void RankServiceImp::GetUserFightTimes(::google::protobuf::RpcController*,
-                                       const ::sails::RankFightTimesRequest* request,
-                                       ::sails::RankFightTimesResponse* response,
-                                       ::google::protobuf::Closure*) {
+void RankServiceImp::GetUserFightTimes(
+    ::google::protobuf::RpcController*,
+    const ::sails::RankFightTimesRequest* request,
+    ::sails::RankFightTimesResponse* response,
+    ::google::protobuf::Closure*) {
   bool result = true;
   redisReply* reply = reinterpret_cast<redisReply*>(
-      redisCommand(c, "user_fight_failed_%s", request->accountid().c_str()));
+      redisCommand(c, "get user_fight_failed_%s",
+                   request->accountid().c_str()));
   int failedTimes = 0;
   if (reply->type == REDIS_REPLY_STRING) {
     sscanf(reply->str, "%10d", &failedTimes);
@@ -120,7 +122,7 @@ void RankServiceImp::GetUserFightTimes(::google::protobuf::RpcController*,
   handleException(reply);
   freeReplyObject(reply);
   reply = reinterpret_cast<redisReply*>(
-      redisCommand(c, "user_fight_win_%s", request->accountid().c_str()));
+      redisCommand(c, "get user_fight_win_%s", request->accountid().c_str()));
   int winTimes = 0;
   if (reply->type == REDIS_REPLY_STRING) {
     sscanf(reply->str, "%10d", &winTimes);
@@ -130,7 +132,8 @@ void RankServiceImp::GetUserFightTimes(::google::protobuf::RpcController*,
   handleException(reply);
   freeReplyObject(reply);
   reply = reinterpret_cast<redisReply*>(
-      redisCommand(c, "user_fight_escape_%s", request->accountid().c_str()));
+      redisCommand(c, "get user_fight_escape_%s",
+                   request->accountid().c_str()));
   int escapeTimes = 0;
   if (reply->type == REDIS_REPLY_STRING) {
     sscanf(reply->str, "%10d", &escapeTimes);
@@ -139,6 +142,11 @@ void RankServiceImp::GetUserFightTimes(::google::protobuf::RpcController*,
   }
   handleException(reply);
   freeReplyObject(reply);
+
+
+  response->set_wintimes(winTimes);
+  response->set_failedtimes(failedTimes);
+  response->set_escapetimes(escapeTimes);
   if (result) {
     response->set_err_code(::sails::ERR_CODE::SUCCESS);
   } else {

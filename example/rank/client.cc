@@ -52,7 +52,16 @@ int main() {
   stub.GetUserScore(&controller, &scoreRequest, &scoreResponse, NULL);
   printf("score:%d rank:%d\n", scoreResponse.score(), scoreResponse.rank());
 
-  printf("add user(12345) score 10\n");
+  // 得到自己的对战次数
+  sails::RankFightTimesRequest timesRequest;
+  sails::RankFightTimesResponse timesResponse;
+  timesRequest.set_accountid("12345");
+  stub.GetUserFightTimes(&controller, &timesRequest, &timesResponse, NULL);
+  printf("get fight times wined:%d failed:%d escape:%d\n",
+         timesResponse.wintimes(), timesResponse.failedtimes(),
+         timesResponse.escapetimes());
+
+  printf("add user(12345) wined fight\n");
   // 增加游戏结果
   sails::RankAddFightResultRequest addRequest;
   addRequest.set_accountid("12345");
