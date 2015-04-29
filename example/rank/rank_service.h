@@ -57,6 +57,18 @@ class RankServiceImp : public RankService {
                       ::sails::RankAddFightResultResponse* response,
                       ::google::protobuf::Closure* done);
 
+  // 得到对战记录数据，返回列表头部元素
+  void GetFightRecordData(::google::protobuf::RpcController* controller,
+                          const ::sails::RankFightRecordDataRequest* request,
+                          ::sails::RankFightRecordDataResponse* response,
+                          ::google::protobuf::Closure* done);
+  // 删除对战记录数据
+  void DeleteFightRecordData(
+      ::google::protobuf::RpcController* controller,
+      const ::sails::RankFightRecordDataDeleteRequest* request,
+      ::sails::RankFightRecordDataDeleteResponse* response,
+      ::google::protobuf::Closure* done);
+
  private:
   // 得到用户分数
   int getuserscore(int type,
@@ -73,6 +85,10 @@ class RankServiceImp : public RankService {
 
   // 增加对战记录，用于通知后台
   bool addFightRecord(const char* record);
+  // 得到下一个记录
+  bool getNextFightRecord(char* record, int len);
+  // 删除记录
+  bool deleteFightRecord(const char *record);
 
   void handleException(redisReply* reply);
 

@@ -5,7 +5,7 @@ INCLUDE			= -I../../deps/ -I$(SRC) -I$(SRC)/client/cc -I$(SAILS)
 LIBPATH			= ../../lib
 
 client: client.o addressbook.pb.o
-	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) -L $(LIBPATH) client.o addressbook.pb.o -o client -pthread -lclient  -lprotobuf
+	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) -L $(LIBPATH) client.o addressbook.pb.o -o client -pthread -lsafclient -lsails  -lprotobuf
 
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
@@ -23,3 +23,5 @@ servicecc=register.cc addressbook.pb.cc
 service_test: $(servicecc)
 	g++ -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) -L $(LIBPATH) -lsails -lprotobuf
 	mv $(TARGET) $(LIBPATH)/$(TARGET)
+clean:
+	rm *.o *.d

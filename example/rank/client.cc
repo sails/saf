@@ -16,9 +16,7 @@
 #include "src/client/cc/client_rpc_channel.h"
 #include "src/client/cc/client_rpc_controller.h"
 #include "example/rank/rank.pb.h"
-
-using namespace google::protobuf;
-
+#include "sails/base/time_t.h"
 
 int main() {
   sails::RpcChannelImp channel("127.0.0.1", 8000);
@@ -62,14 +60,35 @@ int main() {
          timesResponse.escapetimes());
 
   printf("add user(12345) wined fight\n");
+
+  // 得到对战数据
+  sails::RankFightRecordDataRequest fightRecordDataRequest;
+  sails::RankFightRecordDataResponse fightRecordDataResponse;
+  stub.GetFightRecordData(&controller, &fightRecordDataRequest,
+                          &fightRecordDataResponse, NULL);
+  printf("get a fight data record:%s\n",
+         fightRecordDataResponse.data().c_str());
+
+  // 删除对战数据
+  printf("delete fight data:%s\n", fightRecordDataResponse.data().c_str());
+  sails::RankFightRecordDataDeleteRequest deleteFightRecordRequest;
+  sails::RankFightRecordDataDeleteResponse deleteFightRecordResponse;
+  deleteFightRecordRequest.set_data(fightRecordDataResponse.data());
+  stub.DeleteFightRecordData(&controller, &deleteFightRecordRequest,
+                          &deleteFightRecordResponse, NULL);
+
+
   // 增加游戏结果
+  printf("add user(12345) wined game\n");
   sails::RankAddFightResultRequest addRequest;
   addRequest.set_accountid("12345");
   addRequest.set_result(sails::RankAddFightResultRequest::WIN);
   addRequest.set_gameid(1);
   addRequest.set_roomid(10);
   addRequest.set_roomtype(10);
-  addRequest.set_overtime("201501001122");
+  char time_str[100] = {'\0'};
+  sails::base::TimeT::time_str(time_str, 100);
+  addRequest.set_overtime(time_str);
   sails::RankAddFightResultResponse fightscoreResponse;
   stub.AddFightResult(&controller, &addRequest, &fightscoreResponse, NULL);
 

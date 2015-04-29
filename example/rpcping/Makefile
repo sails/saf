@@ -5,7 +5,7 @@ INCLUDE			= -I../../deps/ -I$(SRC) -I$(SRC)/client/cc -I$(SAILS)
 LIBPATH			= ../../lib
 
 client: client.o ping.pb.o
-	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) -L $(LIBPATH) client.o ping.pb.o -o client -pthread -lclient  -lprotobuf
+	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) -L $(LIBPATH) client.o ping.pb.o -o client -pthread -lsafclient -lsails  -lprotobuf
 
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<

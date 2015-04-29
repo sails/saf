@@ -43,6 +43,7 @@ message RankScoreResponse {
   required int32 score = 3;
 }
 
+// 得到对战次数
 message RankFightTimesRequest {
   required string accountId = 1;
 }
@@ -68,14 +69,36 @@ message RankAddFightResultRequest {
   required int32 roomtype = 5;
   required string overtime = 6;
 }
-
 message RankAddFightResultResponse {
   required ERR_CODE err_code = 1;
 }
 
+
+// 得到对战数据记录
+message RankFightRecordDataRequest {
+}
+message RankFightRecordDataResponse {
+  required ERR_CODE err_code = 1;
+  required string data = 2;
+}
+
+// 删除对战记录
+message RankFightRecordDataDeleteRequest {
+  required string data = 1;
+}
+message RankFightRecordDataDeleteResponse {
+  required ERR_CODE err_code = 1;
+}
+
+
 service RankService {
+  // 用户客户端
   rpc GetRanklist(RanklistRequest) returns(RanklistResponse);
   rpc GetUserScore(RankScoreRequest) returns (RankScoreResponse);
   rpc GetUserFightTimes(RankFightTimesRequest) returns (RankFightTimesResponse);
+
+  // 用于服务器
   rpc AddFightResult(RankAddFightResultRequest) returns (RankAddFightResultResponse);
+  rpc GetFightRecordData(RankFightRecordDataRequest) returns (RankFightRecordDataResponse);
+  rpc DeleteFightRecordData(RankFightRecordDataDeleteRequest) returns (RankFightRecordDataDeleteResponse);
 }

@@ -3,21 +3,21 @@ UNAME := $(shell uname)
 CFLAGS			= -std=c++11 -O0 -g -L../../../lib -lprotobuf
 INCLUDE			= -I../../ -I../../../deps/
 
-# 在这里把libsails.a全部加入来，这样客户端就只用一个libclient包就可以开发了
-ifeq ($(UNAME), Linux)
-CFLAGS			+= -Wl,--whole-archive  -lsails -Wl,--no-whole-archive
-TARGET 			= libclient.so
-endif
-ifeq ($(UNAME), Darwin)
-TARGET 			= libclient.dylib
-CFLAGS			+= -install_name @rpath/libclient.dylib -Wl,-force_load ../../../lib/libsails.a
-endif
+%.o: %.cc
+	$(CXX) $(CFLAGS) $(INCLUDE) -fPIC -c -o $@ $<
 
 
+-include $(LOCAL_OBJ:.o=.d) # $(OBJECTS.o=.d)replace all *.o to *.d
 
-clientcc=client_rpc_channel.cc client_rpc_controller.cc
-libclient:$(clientcc)
-	g++ -shared -fPIC $(clientcc) -o $(TARGET) $(INCLUDE) $(CFLAGS)
-	mv $(TARGET) ../../../lib/$(TARGET)
+%.d: %.cc
+	set -e; rm -f $@; \
+	$(CXX) -MM $(CFLAGS) $(INCLUDE) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
+
+clientobj=client_rpc_channel.o client_rpc_controller.o
+libsafclient.a:$(clientobj)
+	ar -r $@ $(clientobj)
 clean:
 	rm *.o *.d

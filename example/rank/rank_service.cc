@@ -154,6 +154,34 @@ void RankServiceImp::GetUserFightTimes(
   }
 }
 
+
+// 得到对战数据，返回列表头部元素
+void RankServiceImp::GetFightRecordData(
+    ::google::protobuf::RpcController*,
+    const ::sails::RankFightRecordDataRequest*,
+    ::sails::RankFightRecordDataResponse* response,
+    ::google::protobuf::Closure*) {
+  char data[100] = {'\0'};
+  if (getNextFightRecord(data, sizeof(data))) {
+    response->set_data(data);
+    response->set_err_code(sails::ERR_CODE::SUCCESS);
+  } else {
+    response->set_err_code(sails::ERR_CODE::ERR);
+  }
+}
+  // 删除对战数据
+void RankServiceImp::DeleteFightRecordData(
+    ::google::protobuf::RpcController*,
+    const ::sails::RankFightRecordDataDeleteRequest* request,
+    ::sails::RankFightRecordDataDeleteResponse* response,
+    ::google::protobuf::Closure*) {
+  if (deleteFightRecord(request->data().c_str())) {
+    response->set_err_code(sails::ERR_CODE::SUCCESS);
+  } else {
+    response->set_err_code(sails::ERR_CODE::ERR);
+  }
+}
+
 // 增加对战结果
 void RankServiceImp::AddFightResult(::google::protobuf::RpcController*,
                     const ::sails::RankAddFightResultRequest* request,
@@ -169,10 +197,10 @@ void RankServiceImp::AddFightResult(::google::protobuf::RpcController*,
   }
   // 增加同步消息
   char record[100] = {'\0'};
-  snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d",
+  snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d|%d",
            request->accountid().c_str(), request->gameid(), request->roomid(),
            request->roomtype(), request->overtime().c_str(),
-           request->result());
+           request->result(), score);
   if (addFightRecord(record)) {
     // 增加胜负次数
     adduserfighttimes(request->accountid().c_str(), request->result());
@@ -295,6 +323,38 @@ bool RankServiceImp::addFightRecord(const char* record) {
   freeReplyObject(reply);
   return result;
 }
+
+// 得到下一个记录
+bool RankServiceImp::getNextFightRecord(char* data, int len) {
+  bool result = false;
+  redisReply* reply =
+      reinterpret_cast<redisReply*>(redisCommand(
+          c, "LINDEX fightrecord 0"));
+  if (reply->type != REDIS_REPLY_ERROR) {
+    if (reply->type == REDIS_REPLY_STRING) {
+      snprintf(data, len, "%s", reply->str);
+    }
+    result = true;
+  }
+  handleException(reply);
+  freeReplyObject(reply);
+  return result;
+}
+
+// 删除记录
+bool RankServiceImp::deleteFightRecord(const char *record) {
+  bool result = false;
+  redisReply* reply =
+      reinterpret_cast<redisReply*>(redisCommand(
+          c, "LREM fightrecord 1 %s", record));
+  if (reply->type != REDIS_REPLY_ERROR) {
+    result = true;
+  }
+  handleException(reply);
+  freeReplyObject(reply);
+  return result;
+}
+
 
 void RankServiceImp::handleException(redisReply* reply) {
   if (reply->type == REDIS_REPLY_ERROR) {

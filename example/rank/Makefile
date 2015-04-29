@@ -5,7 +5,7 @@ INCLUDE			= -I../../deps/ -I$(ROOT) -I$(SAILS)
 LIBPATH			= ../../lib
 
 client: client.o rank.pb.o
-	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) -L $(LIBPATH) client.o rank.pb.o -o client -pthread -lclient  -lprotobuf
+	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) -L $(LIBPATH) client.o rank.pb.o -o client -pthread -lsafclient -lsails  -lprotobuf
 
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
@@ -23,3 +23,6 @@ servicecc=register.cc rank_service.cc rank.pb.cc
 rank_module: $(servicecc)
 	g++ $(CFLAGS) -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) -L $(LIBPATH) -lsails -lprotobuf -ljsoncpp  -lcurl -lhiredis
 	mv $(TARGET) $(LIBPATH)/$(TARGET)
+
+clean:
+	rm *.o *.d
