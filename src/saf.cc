@@ -44,7 +44,7 @@ void sails_init(int, char **) {
   }
 
   // 初始化server
-  server.Init(8000, 1, 10, 2, true);
+  server.Init(8000, 1, 10, 2, false);
 
   monitor = new sails::Monitor(&server, 8001);
   monitor->Run();
