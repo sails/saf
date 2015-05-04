@@ -17,7 +17,7 @@ const char* rank_day = "fight_rank_day";
 const char* rank_week = "fight_rank_week";
 const char* rank_month = "fight_rank_month";
 
-RankServiceImp::RankServiceImp() {
+RankServiceImp::RankServiceImp() : key("safrankservicecontroller") {
   c = NULL;
 }
 
@@ -169,47 +169,83 @@ void RankServiceImp::GetFightRecordData(
     response->set_err_code(sails::ERR_CODE::ERR);
   }
 }
-  // 删除对战数据
+// 删除对战数据
 void RankServiceImp::DeleteFightRecordData(
     ::google::protobuf::RpcController*,
     const ::sails::RankFightRecordDataDeleteRequest* request,
     ::sails::RankFightRecordDataDeleteResponse* response,
     ::google::protobuf::Closure*) {
-  if (deleteFightRecord(request->data().c_str())) {
-    response->set_err_code(sails::ERR_CODE::SUCCESS);
+  if (request->key() == key) {
+    if (deleteFightRecord(request->data().c_str())) {
+      response->set_err_code(sails::ERR_CODE::SUCCESS);
+    } else {
+      response->set_err_code(sails::ERR_CODE::ERR);
+    }
   } else {
-    response->set_err_code(sails::ERR_CODE::ERR);
+    response->set_err_code(sails::ERR_CODE::KEY_INVALID);
   }
 }
 
 // 增加对战结果
-void RankServiceImp::AddFightResult(::google::protobuf::RpcController*,
-                    const ::sails::RankAddFightResultRequest* request,
-                    ::sails::RankAddFightResultResponse* response,
-                    ::google::protobuf::Closure*) {
-  int score = 0;
-  if (request->result() == sails::RankAddFightResultRequest::WIN) {
-    score = 3;
-  } else if (request->result() == sails::RankAddFightResultRequest::FAILED) {
-    score = 2;
-  } else if (request->result() == sails::RankAddFightResultRequest::ESCAPE) {
-    score = -1;
-  }
-  // 增加同步消息
-  char record[100] = {'\0'};
-  snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d|%d",
-           request->accountid().c_str(), request->gameid(), request->roomid(),
-           request->roomtype(), request->overtime().c_str(),
-           request->result(), score);
-  if (addFightRecord(record)) {
-    // 增加胜负次数
-    adduserfighttimes(request->accountid().c_str(), request->result());
-    printf("add user score\n");
-    // 增加分数
-    adduserscore(request->accountid().c_str(), score);
-    response->set_err_code(sails::ERR_CODE::SUCCESS);
+void RankServiceImp::AddFightResult(
+    ::google::protobuf::RpcController*,
+    const ::sails::RankAddFightResultRequest* request,
+    ::sails::RankAddFightResultResponse* response,
+    ::google::protobuf::Closure*) {
+  if (request->key() != key) {
+    response->set_err_code(sails::ERR_CODE::KEY_INVALID);
   } else {
-    response->set_err_code(sails::ERR_CODE::ERR);
+    int score = 0;
+    if (request->result() == sails::RankAddFightResultRequest::WIN) {
+      score = 3;
+    } else if (request->result() == sails::RankAddFightResultRequest::FAILED) {
+      score = 2;
+    } else if (request->result() == sails::RankAddFightResultRequest::ESCAPE) {
+      score = -1;
+    }
+    // 增加同步消息
+    char record[100] = {'\0'};
+    snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d|%d",
+             request->accountid().c_str(), request->gameid(), request->roomid(),
+             request->roomtype(), request->overtime().c_str(),
+             request->result(), score);
+    if (addFightRecord(record)) {
+      // 增加胜负次数
+      adduserfighttimes(request->accountid().c_str(), request->result());
+      printf("add user score\n");
+      // 增加分数
+      adduserscore(request->accountid().c_str(), score);
+      response->set_err_code(sails::ERR_CODE::SUCCESS);
+    } else {
+      response->set_err_code(sails::ERR_CODE::ERR);
+    }
+  }
+}
+
+
+void RankServiceImp::DeleteRanklist(
+    ::google::protobuf::RpcController*,
+    const ::sails::DeleteRanklistRequest* request,
+    ::sails::DeleteRanklistResponse* response,
+    ::google::protobuf::Closure*) {
+  if (request->key() == key) {
+    char rediskey[100] = {'\0'};
+    if (request->type() == TimeType::DAY) {
+      snprintf(rediskey, sizeof(rediskey), "%s", rank_day);
+    } else if (request->type() == TimeType::WEEK) {
+      snprintf(rediskey, sizeof(rediskey), "%s", rank_week);
+    } else if (request->type() == TimeType::MONTH) {
+      snprintf(rediskey, sizeof(rediskey), "%s", rank_month);
+    }
+    redisReply* reply = reinterpret_cast<redisReply*>(
+        redisCommand(c, "ZREMRANGEBYRANK %s 0 10000000", rediskey));
+    if (reply->type != REDIS_REPLY_ERROR) {
+      response->set_err_code(sails::ERR_CODE::SUCCESS);
+    } else {
+      response->set_err_code(sails::ERR_CODE::ERR);
+    }
+  } else {
+    response->set_err_code(sails::ERR_CODE::KEY_INVALID);
   }
 }
 
@@ -287,7 +323,7 @@ int RankServiceImp::adduserscore(const char* accountId, int score) {
 
 
 // 增加用户胜负次数
-  // isWin，-1负；1胜；-2逃跑
+// isWin，-1负；1胜；-2逃跑
 int RankServiceImp::adduserfighttimes(
     const char* accountId, RankAddFightResultRequest::Result result) {
   char key[200] = {'\0'};

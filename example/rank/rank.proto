@@ -7,6 +7,7 @@ option java_generic_services=true;
 enum ERR_CODE {
   SUCCESS = 0;
   ERR = 1;
+  KEY_INVALID = 2;
 }
 
 enum TimeType {
@@ -68,6 +69,7 @@ message RankAddFightResultRequest {
   required int32 roomId = 4;
   required int32 roomtype = 5;
   required string overtime = 6;
+  required string key = 7;
 }
 message RankAddFightResultResponse {
   required ERR_CODE err_code = 1;
@@ -85,8 +87,19 @@ message RankFightRecordDataResponse {
 // 删除对战记录
 message RankFightRecordDataDeleteRequest {
   required string data = 1;
+  required string key = 2;
 }
 message RankFightRecordDataDeleteResponse {
+  required ERR_CODE err_code = 1;
+}
+
+// 删除排行信息
+message DeleteRanklistRequest {
+  required TimeType type = 1;
+  required string key = 2;
+}
+
+message DeleteRanklistResponse {
   required ERR_CODE err_code = 1;
 }
 
@@ -101,4 +114,5 @@ service RankService {
   rpc AddFightResult(RankAddFightResultRequest) returns (RankAddFightResultResponse);
   rpc GetFightRecordData(RankFightRecordDataRequest) returns (RankFightRecordDataResponse);
   rpc DeleteFightRecordData(RankFightRecordDataDeleteRequest) returns (RankFightRecordDataDeleteResponse);
+  rpc DeleteRanklist(DeleteRanklistRequest) returns (DeleteRanklistResponse);
 }

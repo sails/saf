@@ -73,6 +73,7 @@ int main() {
   printf("delete fight data:%s\n", fightRecordDataResponse.data().c_str());
   sails::RankFightRecordDataDeleteRequest deleteFightRecordRequest;
   sails::RankFightRecordDataDeleteResponse deleteFightRecordResponse;
+  deleteFightRecordRequest.set_key("safrankservicecontroller");
   deleteFightRecordRequest.set_data(fightRecordDataResponse.data());
   stub.DeleteFightRecordData(&controller, &deleteFightRecordRequest,
                           &deleteFightRecordResponse, NULL);
@@ -86,6 +87,7 @@ int main() {
   addRequest.set_gameid(1);
   addRequest.set_roomid(10);
   addRequest.set_roomtype(10);
+  addRequest.set_key("safrankservicecontroller");
   char time_str[100] = {'\0'};
   sails::base::TimeT::time_str(time_str, 100);
   addRequest.set_overtime(time_str);

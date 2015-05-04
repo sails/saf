@@ -22,6 +22,7 @@
 
 #include <hiredis/hiredis.h>
 #include <list>
+#include <string>
 #include "rank.pb.h"
 
 
@@ -69,6 +70,12 @@ class RankServiceImp : public RankService {
       ::sails::RankFightRecordDataDeleteResponse* response,
       ::google::protobuf::Closure* done);
 
+  // 删除排行榜
+  void DeleteRanklist(::google::protobuf::RpcController* controller,
+                      const ::sails::DeleteRanklistRequest* request,
+                      ::sails::DeleteRanklistResponse* response,
+                      ::google::protobuf::Closure* done);
+
  private:
   // 得到用户分数
   int getuserscore(int type,
@@ -94,6 +101,7 @@ class RankServiceImp : public RankService {
 
  private:
   redisContext *c;
+  std::string key;
 };
 
 }  // namespace sails
