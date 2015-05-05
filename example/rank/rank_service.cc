@@ -147,6 +147,7 @@ void RankServiceImp::GetUserFightTimes(
   response->set_wintimes(winTimes);
   response->set_failedtimes(failedTimes);
   response->set_escapetimes(escapeTimes);
+  response->set_tietimes(0);  // 没有平
   if (result) {
     response->set_err_code(::sails::ERR_CODE::SUCCESS);
   } else {

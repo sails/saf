@@ -53,7 +53,8 @@ message RankFightTimesResponse {
   required ERR_CODE err_code = 1;
   required int32 winTimes = 2;
   required int32 failedTimes = 3;
-  required int32 escapeTimes = 4;
+  required int32 tieTimes = 4;
+  required int32 escapeTimes = 5;
 }
 
 // 增加对战结果
