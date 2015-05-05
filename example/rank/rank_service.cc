@@ -116,6 +116,8 @@ void RankServiceImp::GetUserFightTimes(
   int failedTimes = 0;
   if (reply->type == REDIS_REPLY_STRING) {
     sscanf(reply->str, "%10d", &failedTimes);
+  } else if (reply->type == REDIS_REPLY_NIL) {
+    failedTimes = 0;
   } else {
     result = false;
   }
@@ -126,6 +128,8 @@ void RankServiceImp::GetUserFightTimes(
   int winTimes = 0;
   if (reply->type == REDIS_REPLY_STRING) {
     sscanf(reply->str, "%10d", &winTimes);
+  } else if (reply->type == REDIS_REPLY_NIL) {
+    winTimes = 0;
   } else {
     result = false;
   }
@@ -137,6 +141,8 @@ void RankServiceImp::GetUserFightTimes(
   int escapeTimes = 0;
   if (reply->type == REDIS_REPLY_STRING) {
     sscanf(reply->str, "%10d", &escapeTimes);
+  } else if (reply->type == REDIS_REPLY_NIL) {
+    escapeTimes = 0;
   } else {
     result = false;
   }
