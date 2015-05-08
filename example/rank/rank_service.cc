@@ -10,12 +10,15 @@
 // Created: 2015-04-27 16:36:55
 
 #include "rank_service.h"
+#include "rank_config.h"
 
 namespace sails {
 
 const char* rank_day = "fight_rank_day";
 const char* rank_week = "fight_rank_week";
 const char* rank_month = "fight_rank_month";
+
+RankConfig config;
 
 RankServiceImp::RankServiceImp() : key("safrankservicecontroller") {
   c = NULL;
@@ -29,8 +32,8 @@ RankServiceImp::~RankServiceImp() {
 
 // 连接redis
 void RankServiceImp::connect() {
-  const char *hostname = "127.0.0.1";
-  int port = 6379;
+  const char *hostname = config.GetRedisServerIP().c_str();
+  int port = config.GetRedisServerPort();
   struct timeval timeout = { 1, 500000 };  // 1.5 seconds
   c = redisConnectWithTimeout(hostname, port, timeout);
   if (c == NULL || c->err) {
@@ -204,11 +207,11 @@ void RankServiceImp::AddFightResult(
   } else {
     int score = 0;
     if (request->result() == sails::RankAddFightResultRequest::WIN) {
-      score = 3;
+      score = config.GetWinScore();
     } else if (request->result() == sails::RankAddFightResultRequest::FAILED) {
-      score = 2;
+      score = config.GetFailedScore();
     } else if (request->result() == sails::RankAddFightResultRequest::ESCAPE) {
-      score = -1;
+      score = config.GetEscapseScore();
     }
     // 增加同步消息
     char record[100] = {'\0'};

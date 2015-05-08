@@ -19,7 +19,7 @@ TARGET 			= rank_module.dylib
 endif
 
 
-servicecc=register.cc rank_service.cc rank.pb.cc
+servicecc=register.cc rank_service.cc rank_config.cc rank.pb.cc
 rank_module: $(servicecc)
 	g++ $(CFLAGS) -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) -L $(LIBPATH) -lsails -lprotobuf -ljsoncpp  -lcurl -lhiredis
 	mv $(TARGET) $(LIBPATH)/$(TARGET)
