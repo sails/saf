@@ -2,10 +2,10 @@
     "listen_port" : 8000,
     "modules" : [
         {"name":"test", "path":"../lib/service_test.dylib"},
-        {"name":"login", "path":"../lib/login_module.dylib"},
-        {"name":"rpcping", "path":"../lib/rpcping_module.dylib"}
+        // {"name":"login", "path":"../lib/login_module.dylib"},
+        // {"name":"rpcping", "path":"../lib/rpcping_module.dylib"},
+        // {"name":"rank", "path":"../lib/rank_module.dylib"}
     ],
-    "max_connfd" : 2000,
-    "handle_thread_pool" : 3,
-    "handle_request_queue_size" : 1000
+    "monitor_port":8001,
+    "handle_thread" : 3
 }

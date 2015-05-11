@@ -25,9 +25,8 @@ class Config {
   std::map<std::string, std::string>* get_modules(
       std::map<std::string, std::string> *modules);
   int get_listen_port();
-  int get_max_connfd();
-  int get_handle_thread_pool();
-  int get_handle_request_queue_size();
+  int get_monitor_port();
+  int get_handle_thread();
 
  private:
   Json::Value root;

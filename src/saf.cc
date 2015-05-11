@@ -14,6 +14,7 @@
 #include "src/monitor.h"
 #include "src/server.h"
 
+sails::Config config;
 bool isRun = true;
 sails::Server server;
 sails::Monitor* monitor;
@@ -44,9 +45,10 @@ void sails_init(int, char **) {
   }
 
   // 初始化server
-  server.Init(8000, 1, 10, 2, false);
+  server.Init(config.get_listen_port(), 1, 10,
+              config.get_handle_thread(), false);
 
-  monitor = new sails::Monitor(&server, 8001);
+  monitor = new sails::Monitor(&server, config.get_monitor_port());
   monitor->Run();
 }
 

@@ -50,32 +50,27 @@ std::map<std::string, std::string>* Config::get_modules(
 }
 
 int Config::get_listen_port() {
-  return root["listen_port"].asInt();
-}
-
-int Config::get_max_connfd() {
-  if (root["max_connfd"].empty()) {
-    return 2000;
+  if (!root["listen_port"].empty()) {
+    return root["listen_port"].asInt();
   }
-  return root["max_connfd"].asInt();
+  return 8000;
+}
+int Config::get_monitor_port() {
+  if (!root["monitor_port"].empty()) {
+    return root["monitor_port"].asInt();
+  }
+  return 8001;
 }
 
-int Config::get_handle_thread_pool() {
-  if (root["handle_thread_pool"].empty()) {
+int Config::get_handle_thread() {
+  if (root["handle_thread"].empty()) {
     int64_t processor_num = sysconf(_SC_NPROCESSORS_CONF);
     if (processor_num < 0) {
       return 2;
     }
     return processor_num;
   }
-  return root["handle_thread_pool"].asInt();
-}
-
-int Config::get_handle_request_queue_size() {
-  if (root["handle_request_queue_size"].empty()) {
-    return 1000;
-  }
-  return root["handle_request_queue_size"].asInt();
+  return root["handle_thread"].asInt();
 }
 
 }  // namespace sails
