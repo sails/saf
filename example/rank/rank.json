@@ -1,0 +1,8 @@
+{
+    "redis_ip":"127.0.0.1",
+    "redis_port":6379,
+    "win_score":3,
+    "failed_score":1,
+    "escape_score":-1,
+    "tie_score":2
+}

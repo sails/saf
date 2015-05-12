@@ -3,7 +3,7 @@ CTEMPLATE		= ../deps/ctemplate/src
 CFLAGS			= -std=c++11 -O0 -g -L../lib -L./ -W -Wall
 INCLUDE			= -I./ -I../ -I../deps/ -I$(SAILS) -I$(CTEMPLATE)
 
-INSTALL_PATH		= ../dist
+INSTALL_PATH		= ../bin
 
 
 
@@ -30,6 +30,6 @@ saf: $(OBJECTS)
 
 clean:
 	rm *.o *.d
-install:sails
+install:saf
 	if [ ! -d ${INSTALL_PATH} ]; then  mkdir -p ${INSTALL_PATH}; fi
-	cp sails ../dist
+	cp saf ../bin
