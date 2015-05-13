@@ -42,7 +42,7 @@ net::PacketCommon* Server::Parse(
     return NULL;
   }
   if (packet != NULL) {
-    uint32_t packetlen = packet->len;
+    uint16_t packetlen = packet->len;
     if (packetlen < sizeof(net::PacketCommon)) {
       return NULL;
     }

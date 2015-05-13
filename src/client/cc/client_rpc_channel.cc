@@ -76,9 +76,8 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   net::PacketRPC *packet = (net::PacketRPC*)malloc(len);
   memset(packet, 0, len);
   packet->common.type.opcode = net::PACKET_PROTOBUF_CALL;
-  packet->common.len = len;
+  packet->common.len = (uint16_t)len;
   memcpy(packet->service_name, service_name.c_str(), service_name.length());
-  memcpy(packet->method_name, method->name().c_str(), method->name().length());
   packet->method_index = method->index();
   memcpy(packet->data, content.c_str(), content.length());
 

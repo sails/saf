@@ -12,7 +12,7 @@
 #include "src/monitor.h"
 #include <string>
 #include "ctemplate/template.h"
-#ifdef __LINUX__
+#ifdef __linux__
 #include "sails/system/cpu_usage.h"
 #endif
 #include "sails/system/mem_usage.h"
@@ -26,7 +26,7 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest* request,
   dict["PID"] = pid;
   dict["PORT"] = server->ListenPort();
   // cpu info
-#ifdef __LINUX__
+#ifdef __linux__
   double cpu = 0;
   if (sails::system::GetProcessCpuUsage(pid, 100, &cpu)) {
     dict["CPU"] = cpu;

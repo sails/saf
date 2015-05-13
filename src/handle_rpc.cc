@@ -40,11 +40,9 @@ void HandleRPC::do_handle(net::PacketCommon *request,
 void HandleRPC::decode_protobuf(net::PacketRPC *request,
                                 net::ResponseContent *response) {
   string service_name(request->service_name);
-  string method_name(request->method_name);
   int method_index = request->method_index;
-  //    cout << "service_name :" << service_name << endl;
-  //    cout << "method_name:" << method_name << endl;
-  if (!service_name.empty() && !method_name.empty()) {
+  // cout << "service_name :" << service_name << endl;
+  if (!service_name.empty() && method_index >= 0) {
     google::protobuf::Service* service
         = ServiceRegister::instance()->get_service(service_name);
     if (service != NULL) {
