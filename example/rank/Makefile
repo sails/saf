@@ -25,4 +25,4 @@ rank_module: $(servicecc)
 	mv $(TARGET) $(LIBPATH)/$(TARGET)
 
 clean:
-	rm *.o *.d
+	rm *.o *.d *.d.*

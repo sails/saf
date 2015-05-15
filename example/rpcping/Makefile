@@ -23,3 +23,6 @@ servicecc=register.cc ping.pb.cc
 rpcping_module: $(servicecc)
 	g++ $(CFLAGS) -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) -L $(LIBPATH) -lsails -lprotobuf -ljsoncpp  -lcurl
 	mv $(TARGET) $(LIBPATH)/$(TARGET)
+
+clean:
+	rm *.d *.d.* *.o

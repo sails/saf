@@ -19,5 +19,6 @@ INCLUDE			= -I../../ -I../../../deps/
 clientobj=client_rpc_channel.o client_rpc_controller.o
 libsafclient.a:$(clientobj)
 	ar -r $@ $(clientobj)
+	cp libsafclient.a ../../../lib
 clean:
-	rm *.o *.d
+	rm *.o *.d *.d.*
