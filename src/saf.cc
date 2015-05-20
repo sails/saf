@@ -45,7 +45,7 @@ void sails_init(int, char **) {
   }
 
   // 初始化server
-  server.Init(config.get_listen_port(), 1, 10,
+  server.Init(config.get_listen_port(), 2, 10,
               config.get_handle_thread(), true);
 
   monitor = new sails::Monitor(&server, config.get_monitor_port());
@@ -56,11 +56,11 @@ void sails_init(int, char **) {
 
 int main(int argc, char *argv[]) {
   sails_init(argc, argv);
-//  ProfilerStart("saf.prof");
+  ProfilerStart("saf.prof");
   while (isRun) {
     sleep(2);
   }
-//  ProfilerStop();
+  ProfilerStop();
 
   return 0;
 }

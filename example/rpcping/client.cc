@@ -27,13 +27,20 @@ int main(int argc, char *argv[])
   // get time
   struct timeval t1;
   gettimeofday(&t1, NULL);
+  int times = 100000;
   request.set_time(t1.tv_sec*1000+int(t1.tv_usec/1000));
-  for (int i = 0; i < 100000; i++) {
+  for (int i = 0; i < times; i++) {
     PingMessage response;
     Closure* callback = NewCallback(&DoneCallback, &response);
     stub.ping(&controller, &request, &response, callback);
     // std::cout << response.DebugString() << std::endl;
   }    
+
+  struct timeval t2;
+  gettimeofday(&t2, NULL);
+  printf("request %d times cost %ld ms\n", times,
+         ((t2.tv_sec*1000+t2.tv_usec/1000)-
+          (t1.tv_sec*1000+t1.tv_usec/1000)));
 
   google::protobuf::ShutdownProtobufLibrary();
 
