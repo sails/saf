@@ -30,7 +30,7 @@ versionfile:
 // This is a generated file.\n\n\
 namespace sails {\n\
 #define VERSION_MAJOR ${VERSION_MAJOR}\n\
-#define VERSION_MAJOR ${VERSION_MAJOR}\n\
+#define VERSION_MINOR ${VERSION_MINOR}\n\
 #define VERSION_PATCH ${VERSION_PATCH}\n\
 }  // namespace sails" > version.h
 
