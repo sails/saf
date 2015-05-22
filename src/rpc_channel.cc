@@ -13,6 +13,7 @@
 
 #include "rpc_channel.h"
 #include <stdio.h>
+#include <limits.h>
 #include <assert.h>
 #include <iostream>
 #include <sstream>
