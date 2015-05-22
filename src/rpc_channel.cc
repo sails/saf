@@ -19,6 +19,7 @@
 #include <sstream>
 #include "sails/net/connector.h"
 #include "saf_packet.h"
+#include "version.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/descriptor.h"
 
@@ -87,7 +88,7 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   if (sn > INT_MAX) {
     sn = 0;
   }
-  packet->version = 1.0;  // client lib 版本号
+  packet->version = VERSION_MAJOR*1000+VERSION_MAJOR*100+VERSION_PATCH;
   memcpy(packet->service_name, service_name.c_str(), service_name.length());
   packet->method_index = method->index();
   memcpy(packet->data, content.c_str(), content.length());

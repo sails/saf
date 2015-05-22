@@ -1,3 +1,7 @@
+VERSION_MAJOR  		:= 1
+VERSION_MINOR  		:= 0
+VERSION_PATCH  		:= 0
+
 SAILS			= ../deps/sails
 CTEMPLATE		= ../deps/ctemplate/src
 CFLAGS			= -std=c++11 -O0 -g -L../lib -L./ -W -Wall
@@ -13,14 +17,22 @@ OBJECTS=saf.o \
 	module_load.o service_register.o \
 	config.o monitor.o
 
-saf: $(OBJECTS)
+saf: versionfile $(OBJECTS)
 	g++ $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -pthread -lprotobuf -ldl -ljsoncpp  -lsails -lctemplate -lprofiler
 
 CLIENTOBJS=rpc_channel.o rpc_controller.o
-libsafclient.a:$(CLIENTOBJS)
+libsafclient.a: versionfile $(CLIENTOBJS)
 	ar -r $@ $(CLIENTOBJS)
 	cp libsafclient.a ../lib
 
+versionfile:
+	echo "\
+// This is a generated file.\n\n\
+namespace sails {\n\
+#define VERSION_MAJOR ${VERSION_MAJOR}\n\
+#define VERSION_MAJOR ${VERSION_MAJOR}\n\
+#define VERSION_PATCH ${VERSION_PATCH}\n\
+}  // namespace sails" > version.h
 
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
