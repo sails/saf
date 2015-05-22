@@ -86,9 +86,7 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   if (sn > INT_MAX) {
     sn = 0;
   }
-  memset(packet, 0, len);
-  packet->type.opcode = net::PACKET_PROTOBUF_CALL;
-  packet->len = (uint16_t)len;
+  packet->version = 1.0;  // client lib 版本号
   memcpy(packet->service_name, service_name.c_str(), service_name.length());
   packet->method_index = method->index();
   memcpy(packet->data, content.c_str(), content.length());
