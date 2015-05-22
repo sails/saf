@@ -1,6 +1,7 @@
 VERSION_MAJOR  		:= 1
 VERSION_MINOR  		:= 0
 VERSION_PATCH  		:= 0
+SAF_VERSION    		:= $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
 
 SAILS			= ../deps/sails
 CTEMPLATE		= ../deps/ctemplate/src
@@ -23,10 +24,10 @@ saf: versionfile $(OBJECTS)
 CLIENTOBJS=rpc_channel.o rpc_controller.o
 libsafclient.a: versionfile $(CLIENTOBJS)
 	ar -r $@ $(CLIENTOBJS)
-	cp libsafclient.a ../lib
+	cp libsafclient.a ../lib/libsafclient.${SAF_VERSION}.a
 
 versionfile:
-	echo "\
+	echo -e "\
 // This is a generated file.\n\n\
 namespace sails {\n\
 #define VERSION_MAJOR ${VERSION_MAJOR}\n\
@@ -50,4 +51,4 @@ clean:
 	rm *.o *.d
 install:saf
 	if [ ! -d ${INSTALL_PATH} ]; then  mkdir -p ${INSTALL_PATH}; fi
-	cp saf ../bin
+	cp saf ../bin/saf${SAF_VERSION}
