@@ -16,6 +16,12 @@ OBJECTS=saf.o \
 saf: $(OBJECTS)
 	g++ $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -pthread -lprotobuf -ldl -ljsoncpp  -lsails -lctemplate -lprofiler
 
+CLIENTOBJS=rpc_channel.o rpc_controller.o
+libsafclient.a:$(CLIENTOBJS)
+	ar -r $@ $(CLIENTOBJS)
+	cp libsafclient.a ../lib
+
+
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
 

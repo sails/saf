@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <iostream>
-#include "client_rpc_channel.h"
-#include "client_rpc_controller.h"
+#include "rpc_channel.h"
+#include "rpc_controller.h"
 #include "login.pb.h"
 #include <thread>
 

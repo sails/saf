@@ -1,7 +1,7 @@
 SAILS			= ../../deps/sails
 ROOT			= ../../
 CFLAGS			= -std=c++11 -O0 -g
-INCLUDE			= -I../../deps/ -I$(ROOT) -I$(SAILS)
+INCLUDE			= -I../../deps/ -I$(ROOT) -I$(ROOT)/src -I$(SAILS)
 LIBPATH			= ../../lib
 
 client: client.o rank.pb.o

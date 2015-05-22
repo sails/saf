@@ -1,7 +1,7 @@
 SAILS			= ../../deps/sails
 SRC			= ../../src
 CFLAGS			= -std=c++11 -O2
-INCLUDE			= -I../../deps/ -I$(SRC) -I$(SRC)/client/cc -I$(SAILS)
+INCLUDE			= -I../../deps/ -I$(SRC) -I$(SRC) -I$(SAILS)
 LIBPATH			= ../../lib
 
 client: client.o addressbook.pb.o

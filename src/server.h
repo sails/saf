@@ -42,7 +42,6 @@ class Server : public sails::net::EpollServer<net::PacketCommon> {
   ModuleLoad moduleLoad;
 };
 
-
 }  // namespace sails
 
 

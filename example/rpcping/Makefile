@@ -1,7 +1,7 @@
 SAILS			= ../../deps/sails
 SRC			= ../../src
 CFLAGS			= -std=c++11 -O0 -g
-INCLUDE			= -I../../deps/ -I$(SRC) -I$(SRC)/client/cc -I$(SAILS)
+INCLUDE			= -I../../deps/ -I$(SRC) -I$(SAILS)
 LIBPATH			= ../../lib
 
 client: client.o ping.pb.o

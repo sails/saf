@@ -11,8 +11,8 @@
 
 
 
-#ifndef SRC_CLIENT_CC_CLIENT_RPC_CONTROLLER_H_
-#define SRC_CLIENT_CC_CLIENT_RPC_CONTROLLER_H_
+#ifndef SRC_RPC_CONTROLLER_H_
+#define SRC_RPC_CONTROLLER_H_
 
 #include <string>
 #include <iostream>
@@ -37,4 +37,4 @@ class RpcControllerImp : public google::protobuf::RpcController {
 
 
 
-#endif  // SRC_CLIENT_CC_CLIENT_RPC_CONTROLLER_H_
+#endif  // SRC_RPC_CONTROLLER_H_

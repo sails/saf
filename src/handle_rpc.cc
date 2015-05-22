@@ -24,21 +24,21 @@ namespace sails {
 __thread char data_str[MAX_CONTENT_LEN];
 
 void HandleRPC::do_handle(net::PacketCommon *request,
-                          net::ResponseContent *response,
+                          HandleReponseContent *response,
                           base::HandleChain<net::PacketCommon *,
-                          net::ResponseContent *> *chain) {
+                          HandleReponseContent *> *chain) {
   if (request != NULL) {
     if (request->type.opcode == net::PACKET_PROTOBUF_CALL ||
         request->type.opcode == net::PACKET_PROTOBUF_RET) {
-      decode_protobuf((net::PacketRPC*)request,
-                      (net::ResponseContent*)response);
+      decode_protobuf(reinterpret_cast<PacketRPCRequest*>(request),
+                      reinterpret_cast<HandleReponseContent*>(response));
     }
     chain->do_handle(request, response);
   }
 }
 
-void HandleRPC::decode_protobuf(net::PacketRPC *request,
-                                net::ResponseContent *response) {
+void HandleRPC::decode_protobuf(PacketRPCRequest *request,
+                                HandleReponseContent *response) {
   string service_name(request->service_name);
   int method_index = request->method_index;
   // cout << "service_name :" << service_name << endl;
@@ -54,8 +54,8 @@ void HandleRPC::decode_protobuf(net::PacketRPC *request,
       Message *response_mg
           = service->GetResponsePrototype(method_desc).New();
 
-      static int PacketRPCSIZE = sizeof(net::PacketRPC);
-      string msgstr(request->data, request->common.len-PacketRPCSIZE+1);
+      static int PacketRPCSIZE = sizeof(PacketRPCRequest);
+      string msgstr(request->data, request->len-PacketRPCSIZE+1);
 
       request_msg->ParseFromString(msgstr);
       service->CallMethod(method_desc, NULL, request_msg, response_mg, NULL);

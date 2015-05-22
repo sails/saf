@@ -10,6 +10,7 @@
 
 #include "src/server.h"
 #include "src/handle_rpc.h"
+#include "saf_packet.h"
 
 namespace sails {
 
@@ -84,21 +85,23 @@ void Server::handle(
 
   net::PacketCommon *request = recvData.data;
 
-  net::ResponseContent content;
-  memset(&content, 0, sizeof(net::ResponseContent));
+  HandleReponseContent content;
 
-  base::HandleChain<net::PacketCommon*, net::ResponseContent*> handle_chain;
+  base::HandleChain<net::PacketCommon*, HandleReponseContent*> handle_chain;
   HandleRPC proto_decode;
   handle_chain.add_handle(&proto_decode);
 
   handle_chain.do_handle(request, &content);
 
   if (content.len > 0 && content.data != NULL) {
-    int response_len = sizeof(net::PacketRPC)+content.len-1;
-    net::PacketRPC *response = (net::PacketRPC*)malloc(response_len);
+    int response_len = sizeof(PacketRPCResponse)+content.len-1;
+    PacketRPCResponse *response = reinterpret_cast<PacketRPCResponse*>(
+        malloc(response_len));
+    new(response) PacketRPCResponse(response_len, request->sn);
+
     memset(response, 0, response_len);
-    response->common.type.opcode = net::PACKET_PROTOBUF_RET;
-    response->common.len = response_len;
+    response->type.opcode = net::PACKET_PROTOBUF_RET;
+    response->len = response_len;
     memcpy(response->data, content.data, content.len);
 
     send(reinterpret_cast<char*>(response), response_len,

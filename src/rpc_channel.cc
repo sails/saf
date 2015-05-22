@@ -11,11 +11,13 @@
 
 
 
-#include "client_rpc_channel.h"
+#include "rpc_channel.h"
 #include <stdio.h>
 #include <assert.h>
 #include <iostream>
 #include <sstream>
+#include "sails/net/connector.h"
+#include "saf_packet.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/descriptor.h"
 
@@ -24,12 +26,18 @@ using namespace google::protobuf;  // NOLINT
 
 namespace sails {
 
-
 RpcChannelImp::RpcChannelImp(string ip, int port):
     ip(ip), port(port) {
-  assert(connector.connect(ip.c_str(), 8000, true));
+  connector = new net::Connector();
+  assert(connector->connect(this->ip.c_str(), this->port, true));
+  sn = 0;
 }
-
+RpcChannelImp::~RpcChannelImp() {
+  if (connector != NULL) {
+    delete connector;
+    connector = NULL;
+  }
+}
 void RpcChannelImp::CallMethod(const MethodDescriptor* method,
                                RpcController *controller,
                                const Message *request,
@@ -54,7 +62,7 @@ net::PacketCommon* RpcChannelImp::parser(
     return NULL;
   }
   if (packet != NULL) {
-    int packetlen = packet->len;
+    uint32_t packetlen = packet->len;
     if (connector->readable() >= packetlen) {
       net::PacketCommon *item = (net::PacketCommon*)malloc(packetlen);
       memcpy(item, packet, packetlen);
@@ -72,33 +80,37 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   const string service_name = method->service()->name();
   string content = request->SerializeAsString();
 
-  int len = sizeof(net::PacketRPC)+content.length()-1;
-  net::PacketRPC *packet = (net::PacketRPC*)malloc(len);
+  int len = sizeof(PacketRPCRequest)+content.length()-1;
+  PacketRPCRequest *packet = reinterpret_cast<PacketRPCRequest*>(malloc(len));
+  new(packet) PacketRPCRequest(len, sn++);
+  if (sn > INT_MAX) {
+    sn = 0;
+  }
   memset(packet, 0, len);
-  packet->common.type.opcode = net::PACKET_PROTOBUF_CALL;
-  packet->common.len = (uint16_t)len;
+  packet->type.opcode = net::PACKET_PROTOBUF_CALL;
+  packet->len = (uint16_t)len;
   memcpy(packet->service_name, service_name.c_str(), service_name.length());
   packet->method_index = method->index();
   memcpy(packet->data, content.c_str(), content.length());
 
-  connector.write(reinterpret_cast<char*>(packet), len);
+  connector->write(reinterpret_cast<char*>(packet), len);
   free(packet);
   if (len <= 1000) {
-    connector.send();
+    connector->send();
   } else {
     printf("error len:%d\n", len);
   }
 
-  int n = connector.read();
+  int n = connector->read();
   if (n > 0) {
     bool continueParse = false;
     do {
       continueParse = false;
-      net::PacketCommon *resp = RpcChannelImp::parser(&connector);
+      net::PacketCommon *resp = RpcChannelImp::parser(connector);
       if (resp != NULL) {
         continueParse = true;
-        char *body = ((net::PacketRPC*)resp)->data;
-        string str_body(body, resp->len-sizeof(net::PacketRPC)+1);
+        char *body = (reinterpret_cast<PacketRPCResponse*>(resp))->data;
+        string str_body(body, resp->len-sizeof(PacketRPCResponse)+1);
         if (strlen(body) > 0) {
           // protobuf message
           response->ParseFromString(str_body);

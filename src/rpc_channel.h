@@ -11,19 +11,23 @@
 
 
 
-#ifndef SRC_CLIENT_CC_CLIENT_RPC_CHANNEL_H_
-#define SRC_CLIENT_CC_CLIENT_RPC_CHANNEL_H_
+#ifndef SRC_RPC_CHANNEL_H_
+#define SRC_RPC_CHANNEL_H_
 
 #include <string>
-#include "sails/net/packets.h"
-#include "sails/net/connector.h"
 #include "google/protobuf/service.h"
 
 namespace sails {
 
+namespace net {
+class Connector;
+struct PacketCommon;
+}
+
 class RpcChannelImp : public ::google::protobuf::RpcChannel {
  public:
   RpcChannelImp(std::string ip, int port);
+  ~RpcChannelImp();
 
   void CallMethod(const google::protobuf::MethodDescriptor* method,
                   google::protobuf::RpcController* controller,
@@ -39,12 +43,13 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
   static net::PacketCommon* parser(
       net::Connector *connector);
  private:
-  net::Connector connector;
+  net::Connector* connector;
   std::string ip;
   int port;
+  uint32_t sn;  // 包序列
 };
 
 }  // namespace sails
 
-#endif  //  SRC_CLIENT_CC_CLIENT_RPC_CHANNEL_H_
+#endif  //  SRC_RPC_CHANNEL_H_
 

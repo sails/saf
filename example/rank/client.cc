@@ -13,8 +13,8 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "src/client/cc/client_rpc_channel.h"
-#include "src/client/cc/client_rpc_controller.h"
+#include "rpc_channel.h"
+#include "rpc_controller.h"
 #include "example/rank/rank.pb.h"
 #include "sails/base/time_t.h"
 

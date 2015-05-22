@@ -12,22 +12,28 @@
 #define SRC_HANDLE_RPC_H_
 
 #include <sails/base/handle.h>
-#include <sails/net/packets.h>
+#include "saf_packet.h"
 
 namespace sails {
 
 #define MAX_CONTENT_LEN  1024
 
+
+struct HandleReponseContent {
+  int len = 0;
+  char* data = NULL;
+};
+
 class HandleRPC : public base::Handle<net::PacketCommon*,
-                                      net::ResponseContent*> {
+                                      HandleReponseContent*> {
  public:
   void do_handle(net::PacketCommon* request,
-                 net::ResponseContent* response,
+                 HandleReponseContent* response,
                  base::HandleChain<net::PacketCommon*,
-                 net::ResponseContent*> *chain);
+                 HandleReponseContent*> *chain);
 
-  void decode_protobuf(net::PacketRPC *request,
-                       net::ResponseContent *response);
+  void decode_protobuf(PacketRPCRequest *request,
+                       HandleReponseContent* response);
   ~HandleRPC();
 };
 
