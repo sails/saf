@@ -11,7 +11,7 @@ INCLUDE			= -I./ -I../ -I../deps/ -I$(SAILS) -I$(CTEMPLATE)
 INSTALL_PATH		= ../bin
 
 UNAME := $(shell uname)
-
+SHELL = /bin/bash  #防止ubuntu中dash在执行echo -e时结果中出现-e,osx中也会出问题
 
 OBJECTS=saf.o \
 	server.o \
@@ -28,22 +28,12 @@ libsafclient.a: versionfile $(CLIENTOBJS)
 	cp libsafclient.a ../lib/libsafclient.${SAF_VERSION}.a
 
 versionfile:
-ifeq ($(UNAME), Linux)
 	echo -e "// This is a generated file.\n\n\
 namespace sails {\n\
 #define VERSION_MAJOR ${VERSION_MAJOR}\n\
 #define VERSION_MINOR ${VERSION_MINOR}\n\
 #define VERSION_PATCH ${VERSION_PATCH}\n\
 }  // namespace sails" > version.h
-else ifeq ($(UNAME), Darwin)
-	echo "// This is a generated file.\n\n\
-namespace sails {\n\
-#define VERSION_MAJOR ${VERSION_MAJOR}\n\
-#define VERSION_MINOR ${VERSION_MINOR}\n\
-#define VERSION_PATCH ${VERSION_PATCH}\n\
-}  // namespace sails" > version.h
-endif
-
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
 
