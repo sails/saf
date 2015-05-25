@@ -5,5 +5,6 @@ cp libsails.a ../../lib
 cd ../../src
 make
 make install
+make libsafclient.a
 make clean
 
