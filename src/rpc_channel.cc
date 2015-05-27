@@ -109,14 +109,22 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
     bool continueParse = false;
     do {
       continueParse = false;
-      net::PacketCommon *resp = RpcChannelImp::parser(connector);
+      PacketRPCResponse *resp = reinterpret_cast<PacketRPCResponse*>
+                                (RpcChannelImp::parser(connector));
       if (resp != NULL) {
         continueParse = true;
-        char *body = (reinterpret_cast<PacketRPCResponse*>(resp))->data;
-        string str_body(body, resp->len-sizeof(PacketRPCResponse)+1);
-        if (strlen(body) > 0) {
-          // protobuf message
-          response->ParseFromString(str_body);
+        if (resp->error_code == ErrorCode::ret_succ) {
+          char *body = resp->data;
+          string str_body(body, resp->len-sizeof(PacketRPCResponse)+1);
+          if (strlen(body) > 0) {
+            // protobuf message
+            response->ParseFromString(str_body);
+          }
+        } else {
+          char msg[50];
+          snprintf(msg, sizeof(msg), "get a response for error_code %d",
+                   resp->error_code);
+          perror(msg);
         }
         delete(resp);
       }
