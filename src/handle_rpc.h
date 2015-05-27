@@ -20,8 +20,14 @@ namespace sails {
 
 
 struct HandleReponseContent {
-  int len = 0;
-  char* data = NULL;
+  int error_code;
+  int len;
+  char* data;
+  HandleReponseContent() {
+    error_code = ErrorCode::ret_succ;
+    len = 0;
+    data = NULL;
+  }
 };
 
 class HandleRPC : public base::Handle<net::PacketCommon*,

@@ -59,7 +59,7 @@ net::PacketCommon* Server::Parse(
       if (item == NULL) {
         char errormsg[100] = {'\0'};
         snprintf(errormsg, sizeof(errormsg),
-                 "malloc failed due to copy receive data "
+                 "malloc failed due to copy receive data"
                  "to a common packet len:%d", packetlen);
         perror(errormsg);
         return NULL;
@@ -93,22 +93,20 @@ void Server::handle(
 
   handle_chain.do_handle(request, &content);
 
+  int response_len = sizeof(PacketRPCResponse)+content.len-1;
+  PacketRPCResponse *response = reinterpret_cast<PacketRPCResponse*>(
+      malloc(response_len));
+  new(response) PacketRPCResponse(response_len, request->sn);
+  response->error_code = content.error_code;
   if (content.len > 0 && content.data != NULL) {
-    int response_len = sizeof(PacketRPCResponse)+content.len-1;
-    PacketRPCResponse *response = reinterpret_cast<PacketRPCResponse*>(
-        malloc(response_len));
-    new(response) PacketRPCResponse(response_len, request->sn);
-
     memset(response, 0, response_len);
     response->type.opcode = net::PACKET_PROTOBUF_RET;
     response->len = response_len;
     memcpy(response->data, content.data, content.len);
-
-    send(reinterpret_cast<char*>(response), response_len,
-         recvData.ip, recvData.port, recvData.uid, recvData.fd);
-
-    free(response);
   }
+  send(reinterpret_cast<char*>(response), response_len,
+       recvData.ip, recvData.port, recvData.uid, recvData.fd);
+  free(response);
 }
 
 

@@ -80,6 +80,7 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
                              const google::protobuf::Message *request,
                              google::protobuf::Message *response) {
   const string service_name = method->service()->name();
+  const string method_name = method->name();
   string content = request->SerializeAsString();
 
   int len = sizeof(PacketRPCRequest)+content.length()-1;
@@ -89,8 +90,10 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
     sn = 0;
   }
   packet->version = VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH;
-  memcpy(packet->service_name, service_name.c_str(), service_name.length());
-  packet->method_index = method->index();
+  snprintf(packet->service_name, sizeof(packet->service_name), "%s",
+           service_name.c_str());
+  snprintf(packet->method_name, sizeof(packet->method_name), "%s",
+           method_name.c_str());
   memcpy(packet->data, content.c_str(), content.length());
 
   connector->write(reinterpret_cast<char*>(packet), len);
