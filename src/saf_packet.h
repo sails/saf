@@ -34,7 +34,7 @@ struct PacketRPCRequest : net::PacketCommon {
   uint16_t version;  // 客户端版本号，服务器可以针对老版本做兼容处理
   char service_name[20];
   // 方法名，由于有些语言的protobuf不支持rpc，所以没有method_index;
-  char method_name[20];
+  char method_name[30];
   char data[1];
   explicit PacketRPCRequest(uint16_t len, uint32_t sn) {
     type.opcode = net::PacketDefine::PACKET_PROTOBUF_CALL;

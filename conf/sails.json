@@ -3,7 +3,7 @@
     "modules" : [
         {"name":"test", "path":"../lib/service_test.dylib"},
         // {"name":"login", "path":"../lib/login_module.dylib"},
-        // {"name":"rpcping", "path":"../lib/rpcping_module.dylib"},
+        {"name":"rpcping", "path":"../lib/rpcping_module.dylib"}
         // {"name":"rank", "path":"../lib/rank_module.dylib"}
     ],
     "monitor_port":8001,
