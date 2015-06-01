@@ -89,6 +89,24 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   if (sn > INT_MAX) {
     sn = 0;
   }
+  if (service_name.length() >= sizeof(packet->service_name)) {
+    char errorMsg[200] = {'\0'};
+    snprintf(errorMsg, sizeof(errorMsg),
+             "service name %s longer than packet->service_name size:%ld",
+             service_name.c_str(), sizeof(packet->service_name));
+    perror(errorMsg);
+    exit(0);
+  }
+  if (method_name.length() >= sizeof(packet->method_name)) {
+    char errorMsg[200] = {'\0'};
+    snprintf(errorMsg, sizeof(errorMsg),
+             "method name %s longer than packet->method_name size:%ld",
+             method_name.c_str(), sizeof(packet->method_name));
+    perror(errorMsg);
+    exit(0);
+  }
+
+
   packet->version = VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH;
   snprintf(packet->service_name, sizeof(packet->service_name), "%s",
            service_name.c_str());
