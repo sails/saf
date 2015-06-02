@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "unistd.h"
 #include <iostream>
 #include "rpc_channel.h"
 #include "rpc_controller.h"
@@ -39,6 +40,7 @@ void client_test(int port) {
 
   for(int i = 0; i < 100000; i++) {
     test_fun(channel, controller);
+    // sleep(20);  在测试最大并发数时，可以让他sleep，并且把server的超时时间改大
   }
 }
 
