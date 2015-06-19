@@ -16,72 +16,64 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "src/service_register.h"
+#include "src/saf_const.h"
 
 using namespace google::protobuf;  // NOLINT
 
 namespace sails {
 
-__thread char data_str[MAX_CONTENT_LEN];
-
-void HandleRPC::do_handle(net::PacketCommon *request,
-                          HandleReponseContent *response,
-                          base::HandleChain<net::PacketCommon *,
-                          HandleReponseContent *> *chain) {
+void HandleRPC::do_handle(sails::RequestPacket *request,
+                          sails::ResponsePacket *response,
+                          base::HandleChain<sails::RequestPacket *,
+                          sails::ResponsePacket *> *chain) {
   if (request != NULL) {
-    if (request->type.opcode == net::PACKET_PROTOBUF_CALL ||
-        request->type.opcode == net::PACKET_PROTOBUF_RET) {
-      decode_protobuf(reinterpret_cast<PacketRPCRequest*>(request),
-                      reinterpret_cast<HandleReponseContent*>(response));
-    }
-    chain->do_handle(request, response);
-  }
-}
+    response->set_type(ErrorCode::ERR_OTHER);
+    // cout << "service_name :" << service_name << endl;
+    if (!request->servicename().empty() && !request->funcname().empty()) {
+      google::protobuf::Service* service
+          = ServiceRegister::instance()->get_service(request->servicename());
+      if (service != NULL) {
+        // or find by method_index
+        const MethodDescriptor *method_desc
+            = service->GetDescriptor()->FindMethodByName(request->funcname());
+        if (method_desc != NULL) {
+          Message *request_msg
+              = service->GetRequestPrototype(method_desc).New();
+          Message *response_mg
+              = service->GetResponsePrototype(method_desc).New();
 
-void HandleRPC::decode_protobuf(PacketRPCRequest *request,
-                                HandleReponseContent *response) {
-  string service_name(request->service_name);
-  string method_name(request->method_name);
-  // cout << "service_name :" << service_name << endl;
-  if (!service_name.empty() && !method_name.empty()) {
-    google::protobuf::Service* service
-        = ServiceRegister::instance()->get_service(service_name);
-    if (service != NULL) {
-      // or find by method_index
-      const MethodDescriptor *method_desc
-          = service->GetDescriptor()->FindMethodByName(method_name);
-      if (method_desc != NULL) {
-        Message *request_msg
-            = service->GetRequestPrototype(method_desc).New();
-        Message *response_mg
-            = service->GetResponsePrototype(method_desc).New();
+          // 类型相同
+          std::string typeurl = string(internal::kTypeGoogleApisComPrefix)
+                                + request_msg->GetDescriptor()->full_name();
 
-        static int PacketRPCSIZE = sizeof(PacketRPCRequest);
-        string msgstr(request->data, request->len-PacketRPCSIZE+1);
+          printf("request typeurl:%s\n", typeurl.c_str());
+          if (request->detail().type_url() == typeurl) {
+            request->detail().UnpackTo(request_msg);
+            printf("call method\n");
+            service->CallMethod(
+                method_desc, NULL, request_msg, response_mg, NULL);
 
-        if (request_msg->ParseFromString(msgstr)) {
-          service->CallMethod(
-              method_desc, NULL, request_msg, response_mg, NULL);
-          string response_content = response_mg->SerializeAsString();
-
-          const char* data = response_content.c_str();
-          int len = response_content.length();
-          response->len = len;
-          memcpy(data_str, data, len);  // don't need memset
-
-          response->error_code = 0;
-          response->data = data_str;
+            response->mutable_detail()->PackFrom(*response_mg);
+            response->set_version(request->version());
+            response->set_type(request->type());
+            response->set_sn(request->sn());
+            response->set_type(ErrorCode::ERR_SUCCESS);
+          } else {
+            response->set_type(ErrorCode::ERR_PARAM);
+          }
+          delete request_msg;
+          delete response_mg;
         } else {
-          response->error_code = ErrorCode::error_param;
+          response->set_type(ErrorCode::ERR_FUN_NAME);
         }
-        delete request_msg;
-        delete response_mg;
       } else {
-        response->error_code = ErrorCode::error_methodname;
+        response->set_type(ErrorCode::ERR_SERVICE_NAME);
       }
     } else {
-      response->error_code = ErrorCode::error_servicename;
+      response->set_type(ErrorCode::ERR_SERVICE_NAME);
     }
   }
+  chain->do_handle(request, response);
 }
 
 HandleRPC::~HandleRPC() {
@@ -89,3 +81,6 @@ HandleRPC::~HandleRPC() {
 }
 
 }  // namespace sails
+
+
+

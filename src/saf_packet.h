@@ -14,6 +14,8 @@
 #ifndef SRC_SAF_PACKET_H_
 #define SRC_SAF_PACKET_H_
 
+#include <string>
+#include <map>
 #include "sails/net/packets.h"
 
 namespace sails {
@@ -63,6 +65,51 @@ struct PacketRPCResponse : net::PacketCommon {
 
 #pragma pack(pop)
 
+
+// 请求包体
+// 因为这个格式固定，且不变，为了简单和解析方便，不用probuffer序列化
+// 如果使用protobufer，包会比直接解析更大，因为它是tag+type+value的形式
+class PacketBase {
+ public:
+  PacketBase();
+  // 它会在buf的头部加上长度
+  uint32_t writeTo(char* buf, int len) {
+    uint32_t requset_len = 0;
+    return requset_len;
+  }
+
+  // buf中要包含长度
+  bool readFrom(const char* buf, int len) {
+    return false;
+  }
+ public:
+  uint16_t version;
+  uint8_t type;
+  uint32_t sn;
+  std::string serviceName;
+  std::string funcName;
+  std::string buffer;  // 消息体
+  int timeout;
+  std::map<std::string, std::string> context;  // 业务上下文
+  std::map<std::string, std::string> status;  // 框架协议上下文
+};
+
+class RequestPacket :PacketBase {
+};
+
+class ResponsePacket : PacketBase {
+ public:
+  int ret;
+};
+
+
 }  // namespace sails
 
 #endif  // SRC_SAF_PACKET_H_
+
+
+
+
+
+
+

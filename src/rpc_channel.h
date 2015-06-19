@@ -19,9 +19,9 @@
 
 namespace sails {
 
+class ResponsePacket;
 namespace net {
 class Connector;
-struct PacketCommon;
 }
 
 class RpcChannelImp : public ::google::protobuf::RpcChannel {
@@ -40,7 +40,7 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
                 const google::protobuf::Message* request,
                 google::protobuf::Message* response);
 
-  static net::PacketCommon* parser(
+  static sails::ResponsePacket* parser(
       net::Connector *connector);
  private:
   net::Connector* connector;

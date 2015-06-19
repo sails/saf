@@ -17,12 +17,12 @@ OBJECTS=saf.o \
 	server.o \
 	handle_rpc.o \
 	module_load.o service_register.o \
-	config.o monitor.o
+	config.o monitor.o saf_packet.pb.o
 
 saf: versionfile $(OBJECTS)
 	g++ $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -pthread -lprotobuf -ldl -ljsoncpp  -lsails -lctemplate -lprofiler
 
-CLIENTOBJS=rpc_channel.o rpc_controller.o
+CLIENTOBJS=rpc_channel.o rpc_controller.o saf_packet.pb.o
 libsafclient.a: versionfile $(CLIENTOBJS)
 	ar -r $@ $(CLIENTOBJS)
 	cp libsafclient.a ../lib/libsafclient.${SAF_VERSION}.a

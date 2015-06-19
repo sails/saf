@@ -18,7 +18,8 @@
 #include <iostream>
 #include <sstream>
 #include "sails/net/connector.h"
-#include "saf_packet.h"
+#include "saf_packet.pb.h"
+#include "saf_const.h"
 #include "version.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/descriptor.h"
@@ -51,100 +52,81 @@ void RpcChannelImp::CallMethod(const MethodDescriptor* method,
   }
 }
 
-net::PacketCommon* RpcChannelImp::parser(
+sails::ResponsePacket* RpcChannelImp::parser(
     net::Connector *connector) {
 
-  if (connector->readable() < sizeof(net::PacketCommon)) {
+  if (connector->readable() < sizeof(int)) {
     return NULL;
   }
-  net::PacketCommon *packet = (net::PacketCommon*)connector->peek();
-  if (packet== NULL || packet->type.opcode >= net::PACKET_MAX) {
-    // error, and empty all data
+  const char* buffer = connector->peek();
+  int packetLen = *(reinterpret_cast<const int*>(buffer));
+  if (connector->readable() < packetLen + sizeof(int)) {
+    return NULL;
+  }
+  // printf("parse packet len:%d\n", packetLen);
+
+  ResponsePacket* response = new ResponsePacket();
+  if (response->ParseFromArray(buffer+sizeof(int), packetLen)) {
+    connector->retrieve(packetLen + sizeof(int));
+    return response;
+  } else {
+    // 出错
+    printf("error\n");
+    delete response;
     connector->retrieve(connector->readable());
-    return NULL;
   }
-  if (packet != NULL) {
-    uint32_t packetlen = packet->len;
-    if (connector->readable() >= packetlen) {
-      net::PacketCommon *item = (net::PacketCommon*)malloc(packetlen);
-      memcpy(item, packet, packetlen);
-      connector->retrieve(packetlen);
-      return item;
-    }
-  }
+
   return NULL;
 }
 
 int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
-                             google::protobuf::RpcController *controller,
+                             google::protobuf::RpcController *,
                              const google::protobuf::Message *request,
                              google::protobuf::Message *response) {
-  const string service_name = method->service()->name();
-  const string method_name = method->name();
-  string content = request->SerializeAsString();
+  RequestPacket packet;
+  packet.set_version(VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH);
+  packet.set_type(MessageType::RPC_REQUEST);
+  packet.set_sn(sn);
+  packet.set_servicename(method->service()->name());
+  packet.set_funcname(method->name());
+  packet.mutable_detail()->PackFrom(*request);
+  packet.set_timeout(10);
 
-  int len = sizeof(PacketRPCRequest)+content.length()-1;
-  PacketRPCRequest *packet = reinterpret_cast<PacketRPCRequest*>(malloc(len));
-  new(packet) PacketRPCRequest(len, sn++);
-  if (sn > INT_MAX) {
-    sn = 0;
-  }
-  if (service_name.length() >= sizeof(packet->service_name)) {
-    char errorMsg[200] = {'\0'};
-    snprintf(errorMsg, sizeof(errorMsg),
-             "service name %s longer than packet->service_name size:%ld",
-             service_name.c_str(), sizeof(packet->service_name));
-    perror(errorMsg);
-    exit(0);
-  }
-  if (method_name.length() >= sizeof(packet->method_name)) {
-    char errorMsg[200] = {'\0'};
-    snprintf(errorMsg, sizeof(errorMsg),
-             "method name %s longer than packet->method_name size:%ld",
-             method_name.c_str(), sizeof(packet->method_name));
-    perror(errorMsg);
-    exit(0);
-  }
+  std::string data = packet.SerializeAsString();
 
-
-  packet->version = VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH;
-  snprintf(packet->service_name, sizeof(packet->service_name), "%s",
-           service_name.c_str());
-  snprintf(packet->method_name, sizeof(packet->method_name), "%s",
-           method_name.c_str());
-  memcpy(packet->data, content.c_str(), content.length());
-
-  connector->write(reinterpret_cast<char*>(packet), len);
-  free(packet);
-  if (len <= 1000) {
-    connector->send();
-  } else {
-    printf("error len:%d\n", len);
-  }
+  int len = data.length();
+  connector->write(reinterpret_cast<char*>(&len), sizeof(int));
+  connector->write(data.c_str(), data.length());
+  connector->send();
 
   int n = connector->read();
+  // printf("read:n:%d\n", n);
   if (n > 0) {
     bool continueParse = false;
     do {
       continueParse = false;
-      PacketRPCResponse *resp = reinterpret_cast<PacketRPCResponse*>
-                                (RpcChannelImp::parser(connector));
+      if (connector->readable() == 0) {
+        return 0;  // 解析完成
+      }
+      ResponsePacket *resp = RpcChannelImp::parser(connector);
       if (resp != NULL) {
-        continueParse = true;
-        if (resp->error_code == ErrorCode::ret_succ) {
-          char *body = resp->data;
-          string str_body(body, resp->len-sizeof(PacketRPCResponse)+1);
-          if (strlen(body) > 0) {
-            // protobuf message
-            response->ParseFromString(str_body);
+        if (resp->ret() == ErrorCode::ERR_SUCCESS) {
+          std::string typeurl = string(internal::kTypeGoogleApisComPrefix)
+                                + response->GetDescriptor()->full_name();
+          // printf("response typeurl:%s\n", typeurl.c_str());
+          if (resp->detail().type_url() == typeurl) {
+            continueParse = true;
+            resp->detail().UnpackTo(response);
           }
         } else {
           char msg[50];
           snprintf(msg, sizeof(msg), "get a response for error_code %d",
-                   resp->error_code);
+                   resp->ret());
           perror(msg);
         }
         delete(resp);
+      } else {
+        perror("response parse null");
       }
     } while (continueParse);
     //
