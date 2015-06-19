@@ -78,7 +78,7 @@ void Server::handle(
     int length = response_body.length();
     char* sendBuf = reinterpret_cast<char*>(
         malloc(length + sizeof(int)));
-    printf("packet len:%d\n", length);
+    // printf("response packet len:%d\n", length);
     memcpy(sendBuf, reinterpret_cast<char*>(&length), sizeof(int));
     memcpy(sendBuf+sizeof(int), response_body.c_str(), length);
 

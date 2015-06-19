@@ -46,7 +46,7 @@ void HandleRPC::do_handle(sails::RequestPacket *request,
           std::string typeurl = string(internal::kTypeGoogleApisComPrefix)
                                 + request_msg->GetDescriptor()->full_name();
 
-          printf("request typeurl:%s\n", typeurl.c_str());
+          // printf("request typeurl:%s\n", typeurl.c_str());
           if (request->detail().type_url() == typeurl) {
             request->detail().UnpackTo(request_msg);
             printf("call method\n");
