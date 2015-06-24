@@ -49,7 +49,6 @@ void HandleRPC::do_handle(sails::RequestPacket *request,
           // printf("request typeurl:%s\n", typeurl.c_str());
           if (request->detail().type_url() == typeurl) {
             request->detail().UnpackTo(request_msg);
-            printf("call method\n");
             service->CallMethod(
                 method_desc, NULL, request_msg, response_mg, NULL);
 

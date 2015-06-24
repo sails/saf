@@ -37,6 +37,8 @@ class Server : public sails::net::EpollServer<sails::RequestPacket> {
   void handle(const sails::net::TagRecvData<sails::RequestPacket> &recvData);
 
   void Tdeleter(RequestPacket *data);
+
+  uint64_t send_data;
  private:
   Config config;
   // rpc 模块,不同的项目放同一个模块中

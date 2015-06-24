@@ -9,11 +9,6 @@ using namespace sails;
 using namespace google::protobuf;
 
 
-void DoneCallback(LoginResponse *response) {
-    printf("done call back\n");
-}
-
-
 void client_test(int port) {
     printf("connect thread\n");
     RpcChannelImp channel("127.0.0.1", port);
@@ -33,9 +28,7 @@ void client_test(int port) {
     request.set_ticket("AGIDOlM9Aj1WYVwwVG0PAFIzAW5VNQU2UjYHYVMxBmUEYFNnUjkLNARjAW1SMQJiUmZUblFhVm5RN1dhUzkCNwBiAzNTMAI/VmRcalRgDz1SXwE5VTUFNVIwBz1TOAY2BGZTYFI6");
     request.set_roomid(1);
     
-    Closure* callback = NewCallback(&DoneCallback, &response);
-    
-    stub.login(&controller, &request, &response, callback);
+    stub.login(&controller, &request, &response, NULL);
     
     std::cout << response.DebugString() << std::endl;
 }

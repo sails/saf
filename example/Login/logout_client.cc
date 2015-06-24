@@ -9,10 +9,6 @@ using namespace sails;
 using namespace google::protobuf;
 
 
-void DoneCallback(LogoutResponse *response) {
-    printf("done call back\n");
-}
-
 int main(int argc, char *argv[])
 {
     int clients = 1;
@@ -30,9 +26,7 @@ int main(int argc, char *argv[])
     request.set_session(session);
     
     
-    Closure* callback = NewCallback(&DoneCallback, &response);
-    
-    stub.logout(&controller, &request, &response, callback);
+    stub.logout(&controller, &request, &response, NULL);
     
     std::cout << response.DebugString() << std::endl;
 

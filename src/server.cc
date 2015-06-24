@@ -40,7 +40,7 @@ sails::RequestPacket* Server::Parse(
   if (connector->readable() < packetLen + sizeof(int)) {
     return NULL;
   }
-  printf("parse packet len:%d\n", packetLen);
+  //  printf("parse packet len:%d\n", packetLen);
 
   RequestPacket* request = new RequestPacket();
   if (request->ParseFromArray(buffer+sizeof(int), packetLen)) {
@@ -82,6 +82,7 @@ void Server::handle(
     memcpy(sendBuf, reinterpret_cast<char*>(&length), sizeof(int));
     memcpy(sendBuf+sizeof(int), response_body.c_str(), length);
 
+    send_data = send_data + length + sizeof(int);
     send(sendBuf, length + sizeof(int),
        recvData.ip, recvData.port, recvData.uid, recvData.fd);
 }

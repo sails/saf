@@ -11,10 +11,6 @@ using namespace google::protobuf;
 using namespace test;
 
 
-void DoneCallback(AddressBook *response) {
-  //	printf("done call back\n");
-}
-
 void test_fun(RpcChannelImp &channel, RpcControllerImp &controller) {
   AddressBookService::Stub stub(&channel);
 
@@ -27,8 +23,7 @@ void test_fun(RpcChannelImp &channel, RpcControllerImp &controller) {
   p1->set_name("xu");
   p1->set_email("sailsxu@gmail.com");
     
-  Closure* callback = NewCallback(&DoneCallback, &response);
-  stub.add(&controller, &request, &response, callback);
+  stub.add(&controller, &request, &response, NULL);
   //       std::cout << response.DebugString() << std::endl;
 }
 
