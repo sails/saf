@@ -71,11 +71,9 @@ void RpcChannelImp::CallMethod(const MethodDescriptor* method,
   if (done != NULL) {  // 异步
     this->async_all(method, controller, request, response, done);
   } else {  // 同步
-    int ret = this->sync_call(method, controller, request, response);
-    if (ret == 0) {
-      return;
+    if (this->sync_call(method, controller, request, response) != 0) {
+      printf("sync call error\n");
     }
-    perror("sync call error");
   }
 }
 
