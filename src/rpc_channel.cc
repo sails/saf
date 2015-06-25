@@ -45,7 +45,11 @@ RpcChannelImp::~RpcChannelImp() {
     connector->close();
     recv_thread->join();
     send_thread->join();
+  }
+  if (recv_thread != NULL) {
     delete recv_thread;
+  }
+  if (send_thread != NULL) {
     delete send_thread;
   }
   if (connector != NULL) {
@@ -94,7 +98,6 @@ sails::ResponsePacket* RpcChannelImp::parser(
     return response;
   } else {
     // 出错
-    printf("error\n");
     delete response;
     connector->retrieve(connector->readable());
   }
@@ -107,6 +110,10 @@ void RpcChannelImp::async_all(const google::protobuf::MethodDescriptor *method,
                  const google::protobuf::Message* request,
                  google::protobuf::Message* response,
                google::protobuf::Closure* done) {
+  if (stop) {
+    done->Run();
+    return;
+  }
   std::unique_lock<std::mutex> locker(request_mutex);
   sn++;
   RequestPacket *packet = new RequestPacket();
@@ -130,6 +137,9 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
                              google::protobuf::RpcController *,
                              const google::protobuf::Message *request,
                              google::protobuf::Message *response) {
+  if (stop) {
+    return -1;
+  }
   std::unique_lock<std::mutex> locker(request_mutex);
   sn++;
   RequestPacket *packet = new RequestPacket();
@@ -145,14 +155,10 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   ticketManager[sn] = new TicketSession(sn, response, NULL);
 
   // wait notify
-  while (!ticketManager[sn]->recved) {
+  while (ticketManager[sn]->errcode == 1) {
     ticketManager[sn]->notify.wait(locker);
   }
-  if (ticketManager[sn]->response != NULL) {
-    return 0;
-  }
-
-  return -1;
+  return ticketManager[sn]->errcode;
 }
 
 void RpcChannelImp::send_request(RpcChannelImp* channel) {
@@ -165,8 +171,14 @@ void RpcChannelImp::send_request(RpcChannelImp* channel) {
       int len = data.length();
       channel->connector->write(reinterpret_cast<char*>(&len), sizeof(int));
       channel->connector->write(data.c_str(), data.length());
-      channel->connector->send();
-      delete request;
+      if (channel->connector->send() > 0) {
+        delete request;
+      } else {
+        // 0表示连接关闭，小于0表示出错
+        // 这里不主动设置stop的标识，由recv_response来设置，这样可以由它来
+        // 处理后续回调和通知
+        return;
+      }
     }
   }
 }
@@ -189,7 +201,7 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
             if (channel->ticketManager[resp->sn()] != NULL) {
               resp->detail().UnpackTo(
                   channel->ticketManager[resp->sn()]->response);
-              channel->ticketManager[resp->sn()]->recved = true;
+              channel->ticketManager[resp->sn()]->errcode = 0;
               if (channel->ticketManager[resp->sn()]->done != NULL) {
                 // 异步，那么就在这里调用
                 channel->ticketManager[resp->sn()]->done->Run();
@@ -212,7 +224,24 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
           continueParse = false;
         }
       } while (continueParse);
-      //
+    } else {  // 0表示连接被关闭, 小于0，出错
+      // perror("recv");
+      // 由于response是一个自定义的结构
+      // 所以没有errcode之类的标识，这里就只能由用户自己通过response没有
+      // 设置来得知是出错了
+      channel->stop = true;
+      for (auto ticket : channel->ticketManager) {
+        if (ticket.second != NULL) {
+          ticket.second->errcode = -1;
+          if (ticket.second->done == NULL) {  // 是同步，通知主线程返回
+            std::unique_lock<std::mutex> locker(channel->request_mutex);
+            channel->ticketManager[ticket.first]->notify.notify_all();
+          } else {  // 异步
+            ticket.second->done->Run();
+          }
+        }
+      }
+      return;
     }
   }
 }

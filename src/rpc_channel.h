@@ -36,10 +36,10 @@ class TicketSession {
     this->sn = sn;
     this->response = response;
     this->done = done;
-    this->recved = false;
+    this->errcode = 1;
   }
   uint32_t sn;
-  bool recved;
+  uint8_t errcode;  // 1初始值，0成功，-1解析出错，-2连接断开
   std::condition_variable notify;
   google::protobuf::Closure* done;  // 用于异步请求
   google::protobuf::Message* response;
