@@ -61,9 +61,5 @@ int main(int argc, char *argv[]) {
     sleep(2);
   }
   //  ProfilerStop();
-  char msg[100] = {'\0'};
-  snprintf(msg, sizeof(msg), "total send:%lld\n", server.send_data);
-  perror(msg);
-  sleep(2);
   return 0;
 }
