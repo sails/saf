@@ -55,10 +55,6 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest* request,
                                 netstatus.connector_num);
     netthread_dict->SetIntValue("NetThread_accept_times",
                                 netstatus.accept_times);
-    netthread_dict->SetIntValue("NetThread_recv_queue_capacity",
-                                netstatus.recv_queue_capacity);
-    netthread_dict->SetIntValue("NetThread_recv_queue_size",
-                                netstatus.recv_queue_size);
     netthread_dict->SetIntValue("NetThread_send_queue_capacity",
                                 netstatus.send_queue_capacity);
     netthread_dict->SetIntValue("NetThread_send_queue_size",
