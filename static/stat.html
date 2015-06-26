@@ -11,7 +11,10 @@
       <div>vm_size: {{VMSIZE}} KB</div>
       <div>mem_size: {{MEMSIZE}} KB</div>
     </div>
-    
+
+    <div class="process_info">
+      <label>Recv Queue Size:{{recv_queue_size}}</label>
+    </div>
     <div class="process_info">
       <label>Net Thread Info(num:{{NetThreadNum}})</label>
       <table class="dataintable">
@@ -29,8 +32,6 @@
 	  <td>{{NetThread_status}}</td>
 	  <td>{{NetThread_connector_num}}</td>
 	  <td>{{NetThread_accept_times}}</td>
-	  <td>{{NetThread_recv_queue_capacity}}</td>
-	  <td>{{NetThread_recv_queue_size}}</td>
 	  <td>{{NetThread_send_queue_capacity}}</td>
 	  <td>{{NetThread_send_queue_size}}</td>
 	</tr>

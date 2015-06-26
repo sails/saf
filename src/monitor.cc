@@ -40,6 +40,7 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest* request,
     dict["MEMSIZE"] = mem_size;
   }
 
+  dict["recv_queue_size"] = server->GetRecvDataNum();
   // 网络线程信息
   dict["NetThreadNum"] = server->NetThreadNum();
   for (size_t i = 0; i < server->NetThreadNum(); i++) {
