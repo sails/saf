@@ -215,10 +215,10 @@ void RankServiceImp::AddFightResult(
     }
     // 增加同步消息
     char record[100] = {'\0'};
-    snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d|%d",
+    snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d|%d|%llu",
              request->accountid().c_str(), request->gameid(), request->roomid(),
              request->roomtype(), request->overtime().c_str(),
-             request->result(), score);
+             request->result(), score, request->fightid());
     if (addFightRecord(record)) {
       // 增加胜负次数
       adduserfighttimes(request->accountid().c_str(), request->result());
