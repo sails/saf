@@ -175,6 +175,8 @@ void RankServiceImp::GetFightRecordData(
   char data[100] = {'\0'};
   if (getNextFightRecord(data, sizeof(data))) {
     response->set_data(data);
+    sails::log::LoggerFactory::getLogD("rank")->debug("GetFightRecordData:%s",
+                                                      data);
     response->set_err_code(sails::ERR_CODE::SUCCESS);
   } else {
     response->set_err_code(sails::ERR_CODE::ERR);
@@ -228,6 +230,7 @@ void RankServiceImp::AddFightResult(
       // 增加胜负次数
       adduserfighttimes(request->accountid().c_str(), request->result());
       printf("add user score\n");
+      sails::log::LoggerFactory::getLogD("rank")->debug("record:%s", record);
       // 增加分数
       adduserscore(request->accountid().c_str(), score);
       response->set_err_code(sails::ERR_CODE::SUCCESS);
