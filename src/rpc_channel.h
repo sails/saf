@@ -50,6 +50,11 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
   RpcChannelImp(std::string ip, int port);
   ~RpcChannelImp();
 
+  // 发心跳包
+  void KeepLive(bool keeplive) {
+    this->keeplive = keeplive;
+  }
+
   void CallMethod(const google::protobuf::MethodDescriptor* method,
                   google::protobuf::RpcController* controller,
                   const google::protobuf::Message* request,
@@ -81,6 +86,7 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
   uint32_t sn;  // 包序列
 
   bool stop;
+  bool keeplive;
 
   base::ThreadQueue<RequestPacket*> request_list;
   //  base::ThreadQueue<ResponsePacket*> response_list;

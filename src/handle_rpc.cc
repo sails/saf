@@ -27,6 +27,13 @@ void HandleRPC::do_handle(sails::RequestPacket *request,
                           base::HandleChain<sails::RequestPacket *,
                           sails::ResponsePacket *> *chain) {
   if (request != NULL) {
+    if (request->type() == MessageType::PING) {
+      response->set_version(request->version());
+      response->set_type(request->type());
+      response->set_sn(request->sn());
+      response->set_ret(ErrorCode::ERR_SUCCESS);
+      return;
+    }
     response->set_type(ErrorCode::ERR_OTHER);
     // cout << "service_name :" << service_name << endl;
     if (!request->servicename().empty() && !request->funcname().empty()) {
@@ -56,9 +63,9 @@ void HandleRPC::do_handle(sails::RequestPacket *request,
             response->set_version(request->version());
             response->set_type(request->type());
             response->set_sn(request->sn());
-            response->set_type(ErrorCode::ERR_SUCCESS);
+            response->set_ret(ErrorCode::ERR_SUCCESS);
           } else {
-            response->set_type(ErrorCode::ERR_PARAM);
+            response->set_ret(ErrorCode::ERR_PARAM);
           }
           delete request_msg;
           delete response_mg;

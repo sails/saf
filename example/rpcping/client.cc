@@ -32,6 +32,7 @@ void DoneCallback(PingMessage *response) {
 void sync_test() {
   int clients = 1;
   RpcChannelImp channel("127.0.0.1", 8000);
+  // channel.KeepLive(true);
   RpcControllerImp controller;
 
   PingService::Stub stub(&channel);

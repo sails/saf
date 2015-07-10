@@ -35,6 +35,7 @@ RpcChannelImp::RpcChannelImp(string ip, int port):
   assert(connector->connect(this->ip.c_str(), this->port, true));
   sn = 0;
   stop = false;
+  keeplive = false;
   recv_thread = new std::thread(recv_response, this);
   send_thread = new std::thread(send_request, this);
 }
@@ -162,10 +163,11 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
 void RpcChannelImp::send_request(RpcChannelImp* channel) {
   while (!channel->stop) {
     RequestPacket *request = NULL;
+    static int empty_request = 0;
     channel->request_list.pop_front(request, 100);
     if (request != NULL) {
+      empty_request = 0;
       std::string data = request->SerializeAsString();
-
       int len = data.length();
       channel->connector->write(reinterpret_cast<char*>(&len), sizeof(int));
       channel->connector->write(data.c_str(), data.length());
@@ -176,6 +178,31 @@ void RpcChannelImp::send_request(RpcChannelImp* channel) {
         // 这里不主动设置stop的标识，由recv_response来设置，这样可以由它来
         // 处理后续回调和通知
         return;
+      }
+    } else {
+      empty_request++;
+      // 超过20次，也就是5s没有发送过数据，则发送一个心跳包
+      if (empty_request > 50) {
+        empty_request = 0;
+        if (!channel->keeplive) {
+          continue;
+        }
+        RequestPacket heartbeat;
+        heartbeat.set_version(
+            VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH);
+        heartbeat.set_type(MessageType::PING);
+        heartbeat.set_sn(0);
+        heartbeat.set_servicename("");
+        heartbeat.set_funcname("");
+        std::string data = heartbeat.SerializeAsString();
+        int len = data.length();
+        channel->connector->write(reinterpret_cast<char*>(&len), sizeof(int));
+        channel->connector->write(data.c_str(), data.length());
+        if (channel->connector->send() > 0) {
+          // 成功
+        } else {
+          // 失败，如果可以，在这里进行重连
+        }
       }
     }
   }
@@ -196,6 +223,10 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
         ResponsePacket *resp = RpcChannelImp::parser(channel->connector);
         if (resp != NULL) {
           if (resp->ret() == ErrorCode::ERR_SUCCESS) {
+            if (resp->type() == MessageType::PING) {
+              delete(resp);
+              continue;
+            }
             if (channel->ticketManager[resp->sn()] != NULL) {
               resp->detail().UnpackTo(
                   channel->ticketManager[resp->sn()]->response);
