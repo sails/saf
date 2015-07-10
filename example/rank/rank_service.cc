@@ -187,7 +187,7 @@ void RankServiceImp::DeleteFightRecordData(
     ::sails::RankFightRecordDataDeleteResponse* response,
     ::google::protobuf::Closure*) {
   sails::log::LoggerFactory::getLogD("rank")->debug(
-      "DeleteFightRecordData:%s", deleteFightRecord(request->data().c_str()));
+      "DeleteFightRecordData:%s", request->data().c_str());
   if (request->key() == key) {
     if (deleteFightRecord(request->data().c_str())) {
       response->set_err_code(sails::ERR_CODE::SUCCESS);
@@ -218,7 +218,7 @@ void RankServiceImp::AddFightResult(
       score = config.GetEscapseScore();
     }
     // 增加同步消息
-    char record[100] = {'\0'};
+    char record[300] = {'\0'};
     snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d|%d|%llu",
              request->accountid().c_str(), request->gameid(), request->roomid(),
              request->roomtype(), request->overtime().c_str(),
