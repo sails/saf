@@ -11,6 +11,7 @@
 
 #include "rank_service.h"
 #include "rank_config.h"
+#include "sails/log/logging.h"
 
 namespace sails {
 
@@ -185,6 +186,8 @@ void RankServiceImp::DeleteFightRecordData(
     const ::sails::RankFightRecordDataDeleteRequest* request,
     ::sails::RankFightRecordDataDeleteResponse* response,
     ::google::protobuf::Closure*) {
+  sails::log::LoggerFactory::getLogD("rank")->debug(
+      "DeleteFightRecordData:%s", deleteFightRecord(request->data().c_str()));
   if (request->key() == key) {
     if (deleteFightRecord(request->data().c_str())) {
       response->set_err_code(sails::ERR_CODE::SUCCESS);
@@ -202,6 +205,7 @@ void RankServiceImp::AddFightResult(
     const ::sails::RankAddFightResultRequest* request,
     ::sails::RankAddFightResultResponse* response,
     ::google::protobuf::Closure*) {
+  sails::log::LoggerFactory::getLogD("rank")->debug("AddFightResult");
   if (request->key() != key) {
     response->set_err_code(sails::ERR_CODE::KEY_INVALID);
   } else {
@@ -219,6 +223,7 @@ void RankServiceImp::AddFightResult(
              request->accountid().c_str(), request->gameid(), request->roomid(),
              request->roomtype(), request->overtime().c_str(),
              request->result(), score, request->fightid());
+    sails::log::LoggerFactory::getLogD("rank")->debug("record:%s", record);
     if (addFightRecord(record)) {
       // 增加胜负次数
       adduserfighttimes(request->accountid().c_str(), request->result());
