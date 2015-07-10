@@ -150,8 +150,8 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   packet->mutable_detail()->PackFrom(*request);
   packet->set_timeout(10);
 
-  request_list.push_back(packet);
   ticketManager[sn] = new TicketSession(sn, response, NULL);
+  request_list.push_back(packet);
 
   // wait notify
   while (ticketManager[sn]->errcode == 1) {
