@@ -230,10 +230,12 @@ void RankServiceImp::AddFightResult(
       // 增加胜负次数
       adduserfighttimes(request->accountid().c_str(), request->result());
       printf("add user score\n");
-      sails::log::LoggerFactory::getLogD("rank")->debug("record:%s", record);
+
       // 增加分数
       adduserscore(request->accountid().c_str(), score);
       response->set_err_code(sails::ERR_CODE::SUCCESS);
+      sails::log::LoggerFactory::getLogD("rank")->debug(
+          "add AddFightResult ok");
     } else {
       response->set_err_code(sails::ERR_CODE::ERR);
     }
