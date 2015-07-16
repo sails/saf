@@ -50,7 +50,7 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
   RpcChannelImp(std::string ip, int port);
   ~RpcChannelImp();
 
-  // 发心跳包
+  // 发心跳包, 断线自动重连
   void KeepLive(bool keeplive) {
     this->keeplive = keeplive;
   }
@@ -78,6 +78,8 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
 
   static sails::ResponsePacket* parser(
       net::Connector *connector);
+
+  void reset_ticket();
 
  private:
   net::Connector* connector;

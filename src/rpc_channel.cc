@@ -177,7 +177,8 @@ void RpcChannelImp::send_request(RpcChannelImp* channel) {
         // 0表示连接关闭，小于0表示出错
         // 这里不主动设置stop的标识，由recv_response来设置，这样可以由它来
         // 处理后续回调和通知
-        return;
+        channel->reset_ticket();
+        delete request;
       }
     } else {
       empty_request++;
@@ -201,7 +202,7 @@ void RpcChannelImp::send_request(RpcChannelImp* channel) {
         if (channel->connector->send() > 0) {
           // 成功
         } else {
-          // 失败，如果可以，在这里进行重连
+          // 失败
         }
       }
     }
@@ -212,7 +213,6 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
   while (!channel->stop) {
     // 为了结束时防止阻塞到这里不能返回，通过调用close使它返回
     int n = channel->connector->read();
-    // printf("read:n:%d\n", n);
     if (n > 0) {
       bool continueParse = false;
       do {
@@ -258,19 +258,36 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
       // 由于response是一个自定义的结构
       // 所以没有errcode之类的标识，这里就只能由用户自己通过response没有
       // 设置来得知是出错了
-      channel->stop = true;
-      for (auto ticket : channel->ticketManager) {
-        if (ticket.second != NULL) {
-          ticket.second->errcode = -1;
-          if (ticket.second->done == NULL) {  // 是同步，通知主线程返回
-            std::unique_lock<std::mutex> locker(channel->request_mutex);
-            channel->ticketManager[ticket.first]->notify.notify_all();
-          } else {  // 异步
-            ticket.second->done->Run();
+      if (n == -1 && errno == EAGAIN) {  // 可能被中断了,重新接收
+      } else {  // 出错
+        channel->reset_ticket();
+        if (channel->keeplive && !channel->stop) {  // 连接关闭了
+          // 重连
+          while (!channel->stop) {
+            sleep(2);
+            channel->connector->close();
+            if (channel->connector->connect(
+                    channel->ip.c_str(), channel->port, true)) {
+              break;
+            } else {
+            }
           }
         }
       }
-      return;
+    }
+  }
+}
+
+void RpcChannelImp::reset_ticket() {
+  for (auto ticket : ticketManager) {
+    if (ticket.second != NULL) {
+      ticket.second->errcode = -1;
+      if (ticket.second->done == NULL) {  // 是同步，通知主线程返回
+        std::unique_lock<std::mutex> locker(request_mutex);
+        ticketManager[ticket.first]->notify.notify_all();
+      } else {  // 异步
+        ticket.second->done->Run();
+      }
     }
   }
 }
