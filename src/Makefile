@@ -22,10 +22,17 @@ OBJECTS=saf.o \
 saf: versionfile $(OBJECTS)
 	g++ $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -pthread -lprotobuf -ldl -ljsoncpp  -lsails -lctemplate -lprofiler
 
+
 CLIENTOBJS=rpc_channel.o rpc_controller.o saf_packet.pb.o
 libsafclient.a: versionfile $(CLIENTOBJS)
+	rm $@
 	ar -r $@ $(CLIENTOBJS)
-	cp libsafclient.a ../lib/libsafclient.${SAF_VERSION}.a
+	rm *.o
+	ar x ../lib/libsails.a
+	ar x $@
+	ar cru $@ *.o
+	rm *.o
+	cp $@ ../lib/libsafclient.${SAF_VERSION}.a
 
 versionfile:
 	echo -e "// This is a generated file.\n\n\

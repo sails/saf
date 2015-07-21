@@ -17,8 +17,9 @@
 #include <string>
 #include <thread>  // NOLINT
 #include <map>
+#include <deque>
 #include <mutex>  // NOLINT
-#include "sails/base/thread_queue.h"
+#include <condition_variable>  // NOLINT
 #include "google/protobuf/service.h"
 
 namespace sails {
@@ -28,7 +29,10 @@ class RequestPacket;
 namespace net {
 class Connector;
 }
-
+namespace base {
+template<typename T, typename D>
+class ThreadQueue;
+}
 class TicketSession {
  public:
   TicketSession(uint32_t sn, google::protobuf::Message* response,
@@ -90,7 +94,7 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
   bool stop;
   bool keeplive;
 
-  base::ThreadQueue<RequestPacket*> request_list;
+  base::ThreadQueue<RequestPacket*, std::deque<RequestPacket*>>* request_list;
   //  base::ThreadQueue<ResponsePacket*> response_list;
   std::mutex request_mutex;
   std::map<uint32_t, TicketSession*> ticketManager;

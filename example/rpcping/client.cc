@@ -77,7 +77,7 @@ void async_test() {
   // wait result
   sleep(3);
   
-  while (responseList.size() <= 0) {
+  while (responseList.size() > 0) {
     PingMessage* response = responseList.back();
     if (response != NULL) {
       delete response;
@@ -91,7 +91,6 @@ int main(int argc, char *argv[])
 {
   sync_test();
   async_test();
-  google::protobuf::ShutdownProtobufLibrary();
 
   return 0;
 }

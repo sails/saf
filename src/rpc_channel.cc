@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <iostream>
 #include <sstream>
+#include "sails/base/thread_queue.h"
 #include "sails/net/connector.h"
 #include "src/saf_packet.pb.h"
 #include "src/saf_const.h"
@@ -26,23 +27,34 @@
 
 using namespace google::protobuf;  // NOLINT
 
+// 注册销毁protobuf
+bool HasRegisterDestoryProtobuffer = false;
+void destory_protobuf() {
+  google::protobuf::ShutdownProtobufLibrary();
+}
 
 namespace sails {
 
 RpcChannelImp::RpcChannelImp(string ip, int port):
     ip(ip), port(port) {
   connector = new net::Connector();
+  request_list = new base::ThreadQueue<RequestPacket*>();
   assert(connector->connect(this->ip.c_str(), this->port, true));
   sn = 0;
   stop = false;
   keeplive = false;
   recv_thread = new std::thread(recv_response, this);
   send_thread = new std::thread(send_request, this);
+  if (!HasRegisterDestoryProtobuffer) {
+    HasRegisterDestoryProtobuffer = true;
+    atexit(destory_protobuf);
+  }
 }
 
 RpcChannelImp::~RpcChannelImp() {
   if (!stop) {
     stop = true;
+    shutdown(connector->get_connector_fd(), 2);
     connector->close();
     recv_thread->join();
     send_thread->join();
@@ -50,6 +62,7 @@ RpcChannelImp::~RpcChannelImp() {
   if (recv_thread != NULL) {
     delete recv_thread;
   }
+
   if (send_thread != NULL) {
     delete send_thread;
   }
@@ -61,6 +74,10 @@ RpcChannelImp::~RpcChannelImp() {
     if (session.second != NULL) {
       delete session.second;
     }
+  }
+  if (request_list != NULL) {
+    delete request_list;
+    request_list = NULL;
   }
 }
 
@@ -124,7 +141,7 @@ void RpcChannelImp::async_all(const google::protobuf::MethodDescriptor *method,
   packet->mutable_detail()->PackFrom(*request);
   packet->set_timeout(10);
 
-  if (request_list.push_back(packet)) {
+  if (request_list->push_back(packet)) {
     ticketManager[sn] = new TicketSession(sn, response, done);
   } else {
     perror("async call too fast");
@@ -151,20 +168,23 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   packet->set_timeout(10);
 
   ticketManager[sn] = new TicketSession(sn, response, NULL);
-  request_list.push_back(packet);
+  request_list->push_back(packet);
 
   // wait notify
   while (ticketManager[sn]->errcode == 1) {
     ticketManager[sn]->notify.wait(locker);
   }
-  return ticketManager[sn]->errcode;
+  int errorcode = ticketManager[sn]->errcode;
+  delete ticketManager[sn];
+  ticketManager.erase(sn);
+  return errorcode;
 }
 
 void RpcChannelImp::send_request(RpcChannelImp* channel) {
   while (!channel->stop) {
     RequestPacket *request = NULL;
     static int empty_request = 0;
-    channel->request_list.pop_front(request, 100);
+    channel->request_list->pop_front(request, 100);
     if (request != NULL) {
       empty_request = 0;
       std::string data = request->SerializeAsString();
@@ -228,15 +248,17 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
               continue;
             }
             if (channel->ticketManager[resp->sn()] != NULL) {
+              std::unique_lock<std::mutex> locker(channel->request_mutex);
               resp->detail().UnpackTo(
                   channel->ticketManager[resp->sn()]->response);
               channel->ticketManager[resp->sn()]->errcode = 0;
               if (channel->ticketManager[resp->sn()]->done != NULL) {
                 // 异步，那么就在这里调用
                 channel->ticketManager[resp->sn()]->done->Run();
+                delete channel->ticketManager[resp->sn()];
+                channel->ticketManager.erase(resp->sn());
               } else {
                 // 同步，通知调用线程
-                std::unique_lock<std::mutex> locker(channel->request_mutex);
                 channel->ticketManager[resp->sn()]->notify.notify_all();
               }
               continueParse = true;
@@ -281,12 +303,14 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
 void RpcChannelImp::reset_ticket() {
   for (auto ticket : ticketManager) {
     if (ticket.second != NULL) {
+      std::unique_lock<std::mutex> locker(request_mutex);
       ticket.second->errcode = -1;
       if (ticket.second->done == NULL) {  // 是同步，通知主线程返回
-        std::unique_lock<std::mutex> locker(request_mutex);
         ticketManager[ticket.first]->notify.notify_all();
       } else {  // 异步
         ticket.second->done->Run();
+        delete ticket.second;
+        ticket.second = NULL;
       }
     }
   }
