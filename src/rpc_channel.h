@@ -14,6 +14,7 @@
 #ifndef SRC_RPC_CHANNEL_H_
 #define SRC_RPC_CHANNEL_H_
 
+#include <signal.h>
 #include <string>
 #include <thread>  // NOLINT
 #include <map>
@@ -93,6 +94,8 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
 
   bool stop;
   bool keeplive;
+  bool isbreak;
+  struct sigaction sigpipe_action;
 
   base::ThreadQueue<RequestPacket*, std::deque<RequestPacket*>>* request_list;
   //  base::ThreadQueue<ResponsePacket*> response_list;

@@ -32,6 +32,8 @@ bool HasRegisterDestoryProtobuffer = false;
 void destory_protobuf() {
   google::protobuf::ShutdownProtobufLibrary();
 }
+void HandleSigpipe(int sig) {
+}
 
 namespace sails {
 
@@ -49,6 +51,12 @@ RpcChannelImp::RpcChannelImp(string ip, int port):
     HasRegisterDestoryProtobuffer = true;
     atexit(destory_protobuf);
   }
+  isbreak = false;
+  // 当连接关闭时，还在发数据，会导致sigpipe信号
+  sigpipe_action.sa_handler = HandleSigpipe;
+  sigemptyset(&sigpipe_action.sa_mask);
+  sigpipe_action.sa_flags = 0;
+  sigaction(SIGPIPE, &sigpipe_action, NULL);
 }
 
 RpcChannelImp::~RpcChannelImp() {
@@ -126,7 +134,7 @@ void RpcChannelImp::async_all(const google::protobuf::MethodDescriptor *method,
                  const google::protobuf::Message* request,
                  google::protobuf::Message* response,
                google::protobuf::Closure* done) {
-  if (stop) {
+  if (stop || isbreak) {
     done->Run();
     return;
   }
@@ -153,7 +161,7 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
                              google::protobuf::RpcController *,
                              const google::protobuf::Message *request,
                              google::protobuf::Message *response) {
-  if (stop) {
+  if (stop || isbreak) {
     return -1;
   }
   std::unique_lock<std::mutex> locker(request_mutex);
@@ -247,8 +255,8 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
               delete(resp);
               continue;
             }
+            std::unique_lock<std::mutex> locker(channel->request_mutex);
             if (channel->ticketManager[resp->sn()] != NULL) {
-              std::unique_lock<std::mutex> locker(channel->request_mutex);
               resp->detail().UnpackTo(
                   channel->ticketManager[resp->sn()]->response);
               channel->ticketManager[resp->sn()]->errcode = 0;
@@ -277,11 +285,13 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
       } while (continueParse);
     } else {  // 0表示连接被关闭, 小于0，出错
       // perror("recv");
+      // printf("read N:%d\n", n);
       // 由于response是一个自定义的结构
       // 所以没有errcode之类的标识，这里就只能由用户自己通过response没有
       // 设置来得知是出错了
       if (n == -1 && errno == EAGAIN) {  // 可能被中断了,重新接收
       } else {  // 出错
+        channel->isbreak = true;
         channel->reset_ticket();
         if (channel->keeplive && !channel->stop) {  // 连接关闭了
           // 重连
@@ -290,6 +300,7 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
             channel->connector->close();
             if (channel->connector->connect(
                     channel->ip.c_str(), channel->port, true)) {
+              channel->isbreak = false;
               break;
             } else {
             }
@@ -301,9 +312,9 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
 }
 
 void RpcChannelImp::reset_ticket() {
+  std::unique_lock<std::mutex> locker(request_mutex);
   for (auto ticket : ticketManager) {
     if (ticket.second != NULL) {
-      std::unique_lock<std::mutex> locker(request_mutex);
       ticket.second->errcode = -1;
       if (ticket.second->done == NULL) {  // 是同步，通知主线程返回
         ticketManager[ticket.first]->notify.notify_all();
