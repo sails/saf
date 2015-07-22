@@ -25,7 +25,7 @@ saf: versionfile $(OBJECTS)
 
 CLIENTOBJS=rpc_channel.o rpc_controller.o saf_packet.pb.o
 libsafclient.a: versionfile $(CLIENTOBJS)
-	rm $@
+	-rm $@
 	ar -r $@ $(CLIENTOBJS)
 	rm *.o
 	ar x ../lib/libsails.a
@@ -54,7 +54,7 @@ namespace sails {\n\
 	rm -f $@.$$$$
 
 clean:
-	rm *.o *.d
+	-rm *.o *.d
 install:saf
 	if [ ! -d ${INSTALL_PATH} ]; then  mkdir -p ${INSTALL_PATH}; fi
 	cp saf ../bin/saf${SAF_VERSION}
