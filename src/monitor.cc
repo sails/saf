@@ -111,6 +111,7 @@ Monitor::~Monitor() {
     delete http_server;
     http_server = NULL;
   }
+  ctemplate::Template::ClearCache();
 }
 
 void Monitor::Run() {
