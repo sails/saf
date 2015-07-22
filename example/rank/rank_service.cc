@@ -33,10 +33,10 @@ RankServiceImp::~RankServiceImp() {
 
 // 连接redis
 void RankServiceImp::connect() {
-  const char *hostname = config.GetRedisServerIP().c_str();
+  std::string hostname = config.GetRedisServerIP();
   int port = config.GetRedisServerPort();
   struct timeval timeout = { 1, 500000 };  // 1.5 seconds
-  c = redisConnectWithTimeout(hostname, port, timeout);
+  c = redisConnectWithTimeout(hostname.c_str(), port, timeout);
   if (c == NULL || c->err) {
     if (c) {
       printf("Connection error: %s\n", c->errstr);
