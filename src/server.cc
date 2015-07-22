@@ -85,6 +85,7 @@ void Server::handle(
     send_data = send_data + length + sizeof(int);
     send(sendBuf, length + sizeof(int),
        recvData.ip, recvData.port, recvData.uid, recvData.fd);
+    free(sendBuf);
 }
 
 
