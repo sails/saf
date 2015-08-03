@@ -17,13 +17,13 @@
 // Author: sailsxu <sailsxu@gmail.com>
 // Created: 2015-04-27 16:30:21
 
-#ifndef RANK_SERVICE_H_
-#define RANK_SERVICE_H_
+#ifndef EXAMPLE_RANK_RANK_SERVICE_H_
+#define EXAMPLE_RANK_RANK_SERVICE_H_
 
 #include <hiredis/hiredis.h>
 #include <list>
 #include <string>
-#include <mutex>
+#include <mutex>  // NOLINT
 #include "rank.pb.h"
 
 
@@ -109,4 +109,4 @@ class RankServiceImp : public RankService {
 
 }  // namespace sails
 
-#endif  // RANK_SERVICE_H_
+#endif  // EXAMPLE_RANK_RANK_SERVICE_H_
