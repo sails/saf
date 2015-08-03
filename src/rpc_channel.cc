@@ -353,6 +353,7 @@ void RpcChannelImp::check_call_timeout(void * data) {
         session->errcode = -1;
         if (session->done == NULL) {  // 是同步，通知主线程返回
           session->notify.notify_all();
+          iter++;
         } else {  // 异步
           session->done->Run();
           delete session;
