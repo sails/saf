@@ -57,6 +57,11 @@ RpcChannelImp::RpcChannelImp(string ip, int port):
   sigemptyset(&sigpipe_action.sa_mask);
   sigpipe_action.sa_flags = 0;
   sigaction(SIGPIPE, &sigpipe_action, NULL);
+
+  timeout = 10;
+  timer = new base::Timer(1);
+  timer->init(RpcChannelImp::check_call_timeout, this, 1);
+  now = time(NULL);
 }
 
 RpcChannelImp::~RpcChannelImp() {
@@ -147,12 +152,14 @@ void RpcChannelImp::async_all(const google::protobuf::MethodDescriptor *method,
   packet->set_servicename(method->service()->name());
   packet->set_funcname(method->name());
   packet->mutable_detail()->PackFrom(*request);
-  packet->set_timeout(10);
+  packet->set_timeout(timeout);
 
-  if (request_list->push_back(packet)) {
-    ticketManager[sn] = new TicketSession(sn, response, done);
-  } else {
+  ticketManager[sn] = new TicketSession(sn, response, done);
+  ticketManager[sn]->calltime = now;
+  if (!request_list->push_back(packet)) {
     perror("async call too fast");
+    delete ticketManager[sn];
+    ticketManager[sn] = NULL;
   }
 }
 
@@ -173,9 +180,10 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   packet->set_servicename(method->service()->name());
   packet->set_funcname(method->name());
   packet->mutable_detail()->PackFrom(*request);
-  packet->set_timeout(10);
+  packet->set_timeout(timeout);
 
   ticketManager[sn] = new TicketSession(sn, response, NULL);
+  ticketManager[sn]->calltime = now;
   request_list->push_back(packet);
 
   // wait notify
@@ -322,6 +330,37 @@ void RpcChannelImp::reset_ticket() {
         ticket.second->done->Run();
         delete ticket.second;
         ticket.second = NULL;
+      }
+    }
+  }
+}
+
+
+void RpcChannelImp::check_call_timeout(void * data) {
+  if (data != NULL) {
+    RpcChannelImp* channel = reinterpret_cast<RpcChannelImp*>(data);
+    if (channel->timeout <= 0) {
+      return;
+    }
+    channel->now = time(NULL);
+    std::unique_lock<std::mutex> locker(channel->request_mutex);
+    for (auto iter = channel->ticketManager.begin();
+         iter != channel->ticketManager.end(); ) {
+      // 超时
+      TicketSession* session = iter->second;
+      if (session != NULL
+          && channel->now - session->calltime > channel->timeout) {
+        session->errcode = -1;
+        if (session->done == NULL) {  // 是同步，通知主线程返回
+          session->notify.notify_all();
+        } else {  // 异步
+          session->done->Run();
+          delete session;
+          iter->second = NULL;
+          iter = channel->ticketManager.erase(iter);
+        }
+      } else {
+        iter++;
       }
     }
   }

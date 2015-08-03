@@ -33,6 +33,7 @@ class Connector;
 namespace base {
 template<typename T, typename D>
 class ThreadQueue;
+class Timer;
 }
 class TicketSession {
  public:
@@ -42,8 +43,10 @@ class TicketSession {
     this->response = response;
     this->done = done;
     this->errcode = 1;
+    calltime = 0;  // 为了性能这里不设置为time(NULL)，而是能系统统一的计时器
   }
   uint32_t sn;
+  uint32_t calltime;  // 用于查检超时
   uint8_t errcode;  // 1初始值，0成功，-1解析出错，-2连接断开
   std::condition_variable notify;
   google::protobuf::Closure* done;  // 用于异步请求
@@ -86,6 +89,9 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
 
   void reset_ticket();
 
+  // 检查调用是否超时
+  static void check_call_timeout(void * data);
+
  private:
   net::Connector* connector;
   std::string ip;
@@ -104,6 +110,9 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
   std::thread *send_thread;
   // 异步请求时，回调的线程也用它，所以要保证回调方法能尽快完成
   std::thread *recv_thread;
+  base::Timer* timer;  // 用于检查调用是否超时
+  uint32_t timeout;  // 0永不超时，默认是10s
+  uint32_t now;
 };
 
 }  // namespace sails
