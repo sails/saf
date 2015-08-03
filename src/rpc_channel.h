@@ -47,7 +47,7 @@ class TicketSession {
   }
   uint32_t sn;
   uint32_t calltime;  // 用于查检超时
-  uint8_t errcode;  // 1初始值，0成功，-1解析出错，-2连接断开
+  uint8_t errcode;  // 1初始值，0成功，-1解析出错，-2连接断开, -3超时
   std::condition_variable notify;
   google::protobuf::Closure* done;  // 用于异步请求
   google::protobuf::Message* response;
