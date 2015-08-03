@@ -53,6 +53,7 @@ void RankServiceImp::GetRanklist(::google::protobuf::RpcController*,
                                  const ::sails::RanklistRequest* request,
                                  ::sails::RanklistResponse* response,
                                  ::google::protobuf::Closure*) {
+  std::unique_lock<std::mutex> locker(lck);
   int topnum = request->top();
   if (topnum <= 0) {
     topnum = 1;
@@ -92,6 +93,7 @@ void RankServiceImp::GetUserScore(::google::protobuf::RpcController*,
                                   const ::sails::RankScoreRequest* request,
                                   ::sails::RankScoreResponse* response,
                                   ::google::protobuf::Closure*) {
+  std::unique_lock<std::mutex> locker(lck);
   int type = 0;
   if (request->type() == TimeType::DAY) {
     type = 1;
@@ -113,6 +115,7 @@ void RankServiceImp::GetUserFightTimes(
     const ::sails::RankFightTimesRequest* request,
     ::sails::RankFightTimesResponse* response,
     ::google::protobuf::Closure*) {
+  std::unique_lock<std::mutex> locker(lck);
   bool result = true;
   redisReply* reply = reinterpret_cast<redisReply*>(
       redisCommand(c, "get user_fight_failed_%s",
@@ -172,6 +175,7 @@ void RankServiceImp::GetFightRecordData(
     const ::sails::RankFightRecordDataRequest*,
     ::sails::RankFightRecordDataResponse* response,
     ::google::protobuf::Closure*) {
+  std::unique_lock<std::mutex> locker(lck);
   char data[100] = {'\0'};
   if (getNextFightRecord(data, sizeof(data))) {
     response->set_data(data);
@@ -188,6 +192,7 @@ void RankServiceImp::DeleteFightRecordData(
     const ::sails::RankFightRecordDataDeleteRequest* request,
     ::sails::RankFightRecordDataDeleteResponse* response,
     ::google::protobuf::Closure*) {
+  std::unique_lock<std::mutex> locker(lck);
   sails::log::LoggerFactory::getLogD("rank")->debug(
       "DeleteFightRecordData:%s", request->data().c_str());
   if (request->key() == key) {
@@ -207,6 +212,7 @@ void RankServiceImp::AddFightResult(
     const ::sails::RankAddFightResultRequest* request,
     ::sails::RankAddFightResultResponse* response,
     ::google::protobuf::Closure*) {
+  std::unique_lock<std::mutex> locker(lck);
   sails::log::LoggerFactory::getLogD("rank")->debug("AddFightResult");
   if (request->key() != key) {
     response->set_err_code(sails::ERR_CODE::KEY_INVALID);
@@ -248,6 +254,7 @@ void RankServiceImp::DeleteRanklist(
     const ::sails::DeleteRanklistRequest* request,
     ::sails::DeleteRanklistResponse* response,
     ::google::protobuf::Closure*) {
+  std::unique_lock<std::mutex> locker(lck);
   if (request->key() == key) {
     char rediskey[100] = {'\0'};
     if (request->type() == TimeType::DAY) {

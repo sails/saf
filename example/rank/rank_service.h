@@ -23,6 +23,7 @@
 #include <hiredis/hiredis.h>
 #include <list>
 #include <string>
+#include <mutex>
 #include "rank.pb.h"
 
 
@@ -102,6 +103,8 @@ class RankServiceImp : public RankService {
  private:
   redisContext *c;
   std::string key;
+  // 由于一个hredis的redisContext不是线程安全的，所以要加锁
+  std::mutex lck;
 };
 
 }  // namespace sails
