@@ -179,8 +179,7 @@ void RankServiceImp::GetFightRecordData(
   char data[100] = {'\0'};
   if (getNextFightRecord(data, sizeof(data))) {
     response->set_data(data);
-    sails::log::LoggerFactory::getLogD("rank")->debug("GetFightRecordData:%s",
-                                                      data);
+    DEBUG_DLOG("rank", "GetFightRecordData:%s", data);
     response->set_err_code(sails::ERR_CODE::SUCCESS);
   } else {
     response->set_err_code(sails::ERR_CODE::ERR);
@@ -193,8 +192,7 @@ void RankServiceImp::DeleteFightRecordData(
     ::sails::RankFightRecordDataDeleteResponse* response,
     ::google::protobuf::Closure*) {
   std::unique_lock<std::mutex> locker(lck);
-  sails::log::LoggerFactory::getLogD("rank")->debug(
-      "DeleteFightRecordData:%s", request->data().c_str());
+  DEBUG_DLOG("rank", "DeleteFightRecordData:%s", request->data().c_str());
   if (request->key() == key) {
     if (deleteFightRecord(request->data().c_str())) {
       response->set_err_code(sails::ERR_CODE::SUCCESS);
@@ -213,7 +211,7 @@ void RankServiceImp::AddFightResult(
     ::sails::RankAddFightResultResponse* response,
     ::google::protobuf::Closure*) {
   std::unique_lock<std::mutex> locker(lck);
-  sails::log::LoggerFactory::getLogD("rank")->debug("AddFightResult");
+  DEBUG_DLOG("rank", "AddFightResult");
   if (request->key() != key) {
     response->set_err_code(sails::ERR_CODE::KEY_INVALID);
   } else {
@@ -231,7 +229,7 @@ void RankServiceImp::AddFightResult(
              request->accountid().c_str(), request->gameid(), request->roomid(),
              request->roomtype(), request->overtime().c_str(),
              request->result(), score, request->fightid());
-    sails::log::LoggerFactory::getLogD("rank")->debug("record:%s", record);
+    DEBUG_DLOG("rank", "record:%s", record);
     if (addFightRecord(record)) {
       // 增加胜负次数
       adduserfighttimes(request->accountid().c_str(), request->result());
@@ -240,8 +238,7 @@ void RankServiceImp::AddFightResult(
       // 增加分数
       adduserscore(request->accountid().c_str(), score);
       response->set_err_code(sails::ERR_CODE::SUCCESS);
-      sails::log::LoggerFactory::getLogD("rank")->debug(
-          "add AddFightResult ok");
+      DEBUG_DLOG("rank", "add AddFightResult ok");
     } else {
       response->set_err_code(sails::ERR_CODE::ERR);
     }
