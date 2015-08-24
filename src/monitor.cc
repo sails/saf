@@ -134,7 +134,7 @@ void Monitor::Join() {
 void Monitor::Start(Monitor* monitor) {
   monitor->http_server = new sails::net::HttpServer();
   monitor->http_server->Init(monitor->port, 1, 10, 1);
-  monitor->http_server->SetStaticResourcePath("../static/");
+  monitor->http_server->SetStaticResourcePath(std::string("../static/"));
   // 请求处理器与url映射
   monitor->processor = new ServerStatProcessor(monitor->server);
   HTTPBIND(monitor->http_server,

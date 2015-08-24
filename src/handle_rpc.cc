@@ -35,7 +35,8 @@ void HandleRPC::do_handle(sails::RequestPacket *request,
       return;
     }
     response->set_type(ErrorCode::ERR_OTHER);
-    // cout << "service_name :" << service_name << endl;
+    // cout << "service_name :" << request->servicename()
+    // <<  "fun:" << request->funcname() << endl;
     if (!request->servicename().empty() && !request->funcname().empty()) {
       google::protobuf::Service* service
           = ServiceRegister::instance()->get_service(request->servicename());
@@ -55,6 +56,7 @@ void HandleRPC::do_handle(sails::RequestPacket *request,
 
           // printf("request typeurl:%s\n", typeurl.c_str());
           if (request->detail().type_url() == typeurl) {
+            // printf("start call method:%s\n", request->funcname().c_str());
             request->detail().UnpackTo(request_msg);
             service->CallMethod(
                 method_desc, NULL, request_msg, response_mg, NULL);

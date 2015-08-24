@@ -40,7 +40,7 @@ sails::RequestPacket* Server::Parse(
   if (connector->readable() < packetLen + sizeof(int)) {
     return NULL;
   }
-  //  printf("parse packet len:%d\n", packetLen);
+  // printf("parse packet len:%d\n", packetLen);
 
   RequestPacket* request = new RequestPacket();
   if (request->ParseFromArray(buffer+sizeof(int), packetLen)) {
