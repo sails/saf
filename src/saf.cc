@@ -10,7 +10,7 @@
 #include <sails/net/epoll_server.h>
 #include <sails/net/connector.h>
 #include <signal.h>
-//#include <gperftools/profiler.h>
+// #include <gperftools/profiler.h>
 #include "src/monitor.h"
 #include "src/server.h"
 
@@ -46,7 +46,7 @@ void sails_init(int, char **) {
 
   // 初始化server
   server.Init(config.get_listen_port(), 2, 10,
-              config.get_handle_thread(), true);
+              config.get_handle_thread(), true, 2);
 
   monitor = new sails::Monitor(&server, config.get_monitor_port());
   monitor->Run();

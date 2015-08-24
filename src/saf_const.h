@@ -18,11 +18,12 @@
 namespace sails {
 
 enum ErrorCode {
-  ERR_SUCCESS = 0                          // 成功
-  , ERR_SERVICE_NAME                    // service没有找到
-  , ERR_FUN_NAME                        // method没有找到
-  , ERR_PARAM                           // 参数错误
-  , ERR_OTHER                           // 其它错误
+  ERR_SUCCESS = 0                         // 成功
+  , ERR_SERVICE_NAME                      // service没有找到
+  , ERR_FUN_NAME                          // method没有找到
+  , ERR_PARAM                             // 参数错误
+  , ERR_TIMEOUT                           // 超时
+  , ERR_OTHER = 1000                      // 其它错误
 };
 
 enum MessageType {
