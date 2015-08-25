@@ -88,11 +88,4 @@ void Server::handle(
     free(sendBuf);
 }
 
-
-
-void Server::Tdeleter(RequestPacket *data) {
-  delete data;
-}
-
-
 }  // namespace sails

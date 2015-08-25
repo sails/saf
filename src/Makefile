@@ -5,7 +5,7 @@ SAF_VERSION    		:= $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
 
 SAILS			= ../deps/sails
 CTEMPLATE		= ../deps/ctemplate/src
-CFLAGS			= -std=c++11 -O0 -g -L../lib -L./ -W -Wall
+CFLAGS			= -std=c++11 -O0 -g -fno-omit-frame-pointer -L../lib -L./ -W -Wall
 INCLUDE			= -I./ -I../ -I../deps/ -I$(SAILS) -I$(CTEMPLATE)
 
 INSTALL_PATH		= ../bin
@@ -27,11 +27,11 @@ CLIENTOBJS=rpc_channel.o rpc_controller.o saf_packet.pb.o
 libsafclient.a: versionfile $(CLIENTOBJS)
 	-rm $@
 	ar -r $@ $(CLIENTOBJS)
-	rm *.o
+	rm -f *.o
 	ar x ../lib/libsails.a
 	ar x $@
 	ar cru $@ *.o
-	rm *.o
+	rm -f *.o
 	cp $@ ../lib/libsafclient.${SAF_VERSION}.a
 
 versionfile:
@@ -54,7 +54,7 @@ namespace sails {\n\
 	rm -f $@.$$$$
 
 clean:
-	-rm *.o *.d
+	-rm -f *.o *.d
 install:saf
 	if [ ! -d ${INSTALL_PATH} ]; then  mkdir -p ${INSTALL_PATH}; fi
 	cp saf ../bin/saf${SAF_VERSION}

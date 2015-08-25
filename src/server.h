@@ -36,7 +36,9 @@ class Server : public sails::net::EpollServer<sails::RequestPacket> {
 
   void handle(const sails::net::TagRecvData<sails::RequestPacket> &recvData);
 
-  void Tdeleter(RequestPacket *data);
+  void Tdeleter(RequestPacket *data) {
+    delete data;
+  }
 
   uint64_t send_data;
  private:

@@ -12,9 +12,12 @@
       <div>mem_size: {{MEMSIZE}} KB</div>
     </div>
 
+    {{#ServerRecvSize}}
     <div class="process_info">
-      <label>Recv Queue Size:{{recv_queue_size}}</label>
+      <label>Server Recv Queue Size:{{recv_queue_size}}</label>
     </div>
+    {{/ServerRecvSize}}
+    
     <div class="process_info">
       <label>Net Thread Info(num:{{NetThreadNum}})</label>
       <table class="dataintable">
@@ -23,6 +26,7 @@
 	  <th>status</th>
 	  <th>connector_num</th>
 	  <th>accept_times</th>
+          <th>reject_times</th>
 	  <th>send_queue_capacity</th>
 	  <th>send_queue_size</th>
 	</tr>
@@ -32,6 +36,7 @@
 	  <td>{{NetThread_status}}</td>
 	  <td>{{NetThread_connector_num}}</td>
 	  <td>{{NetThread_accept_times}}</td>
+          <td>{{NetThread_reject_times}}</td>
 	  <td>{{NetThread_send_queue_capacity}}</td>
 	  <td>{{NetThread_send_queue_size}}</td>
 	</tr>
@@ -46,16 +51,20 @@
           <th>no</th>
 	  <th>status</th>
 	  <th>handle_times</th>
+          {{#HandleRecvSize}}
 	  <th>handle_queue_capacity</th>
 	  <th>handle_queue_size</th>
+          {{/HandleRecvSize}}
 	</tr>
-	{{#HandleThreadSection}}
+        {{#HandleThreadSection}}
 	<tr>
           <td>{{HandleThread_NO}}</td>
 	  <td>{{HandleThread_status}}</td>
 	  <td>{{HandleThread_handle_times}}</td>
+          {{#HandleRecvSize}}
 	  <td>{{HandleThread_handle_queue_capacity}}</td>
 	  <td>{{HandleThread_handle_queue_size}}</td>
+          {{/HandleRecvSize}}
 	</tr>
 	{{/HandleThreadSection}}
       </table>

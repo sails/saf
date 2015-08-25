@@ -19,7 +19,7 @@
 
 namespace sails {
 
-void ServerStatProcessor::serverstat(sails::net::HttpRequest* request,
+void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
                 sails::net::HttpResponse* response) {
   ctemplate::TemplateDictionary dict("stat");
   pid_t pid = getpid();
@@ -39,7 +39,12 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest* request,
     dict["VMSIZE"] = vm_size;
     dict["MEMSIZE"] = mem_size;
   }
-
+  dict["run_mode"] = server->RunMode();
+  if (server->RunMode() == 1) {
+    dict.ShowSection("ServerRecvSize");
+  } else {
+    dict.ShowSection("HandleRecvSize");
+  }
   dict["recv_queue_size"] = server->GetRecvDataNum();
   // 网络线程信息
   dict["NetThreadNum"] = server->NetThreadNum();
@@ -56,6 +61,8 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest* request,
                                 netstatus.connector_num);
     netthread_dict->SetIntValue("NetThread_accept_times",
                                 netstatus.accept_times);
+    netthread_dict->SetIntValue("NetThread_reject_times",
+                                netstatus.reject_times);
     netthread_dict->SetIntValue("NetThread_send_queue_capacity",
                                 netstatus.send_queue_capacity);
     netthread_dict->SetIntValue("NetThread_send_queue_size",
@@ -76,6 +83,9 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest* request,
                                    handlestatus.status);
     handlethread_dict->SetIntValue("HandleThread_handle_times",
                                    handlestatus.handle_times);
+    if (server->RunMode() == 2) {
+      handlethread_dict->ShowSection("HandleRecvSize");
+    }
     handlethread_dict->SetIntValue("HandleThread_handle_queue_capacity",
                                    handlestatus.handle_queue_capacity);
     handlethread_dict->SetIntValue("HandleThread_handle_queue_size",
