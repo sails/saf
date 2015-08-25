@@ -72,6 +72,10 @@ RpcChannelImp::~RpcChannelImp() {
     recv_thread->join();
     send_thread->join();
   }
+  if (timer != NULL) {
+    delete timer;
+    timer = NULL;
+  }
   if (recv_thread != NULL) {
     delete recv_thread;
   }
@@ -83,9 +87,10 @@ RpcChannelImp::~RpcChannelImp() {
     delete connector;
     connector = NULL;
   }
-  for (auto session : ticketManager) {
+  for (auto& session : ticketManager) {
     if (session.second != NULL) {
       delete session.second;
+      session.second = NULL;
     }
   }
   if (request_list != NULL) {
@@ -218,7 +223,7 @@ void RpcChannelImp::send_request(RpcChannelImp* channel) {
       }
     } else {
       empty_request++;
-      // 超过20次，也就是5s没有发送过数据，则发送一个心跳包
+      // 超过50次，也就是5s没有发送过数据，则发送一个心跳包
       if (empty_request > 50) {
         empty_request = 0;
         if (!channel->keeplive) {
@@ -353,7 +358,7 @@ void RpcChannelImp::check_call_timeout(void * data) {
         session->errcode = -3;
         if (session->done == NULL) {  // 是同步，通知主线程返回
           session->notify.notify_all();
-          iter++;
+          ++iter;
         } else {  // 异步
           session->done->Run();
           delete session;
@@ -361,7 +366,7 @@ void RpcChannelImp::check_call_timeout(void * data) {
           iter = channel->ticketManager.erase(iter);
         }
       } else {
-        iter++;
+        ++iter;
       }
     }
   }
