@@ -321,7 +321,7 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
 
 void RpcChannelImp::reset_ticket() {
   std::unique_lock<std::mutex> locker(request_mutex);
-  for (auto ticket : ticketManager) {
+  for (auto& ticket : ticketManager) {
     if (ticket.second != NULL) {
       ticket.second->errcode = -1;
       if (ticket.second->done == NULL) {  // 是同步，通知主线程返回
