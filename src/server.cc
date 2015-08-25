@@ -26,8 +26,57 @@ Server::Server() :
       moduleLoad.load(iter->second);
     }
   }
+  // 设置ip限制
+  deny_list = config.DenyIPList();
+  allow_list = config.AllowIPList();
 }
 
+
+bool Server::isIpAllow(const std::string& ip) {
+  for (std::string& pat : allow_list) {
+    if (pat == "all" || ipMatch(ip, pat)) {
+      return true;
+    }
+  }
+
+  for (std::string& pat : deny_list) {
+    if (pat == "all" || ipMatch(ip, pat)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Server::ipMatch(const std::string& ip, const std::string& pat) {
+  if (ip.empty() || pat.empty()) {
+    return false;
+  }
+  if (pat.find('*') == std::string::npos) {
+    return ip == pat;
+  }
+
+  std::string::size_type ipIndex = 0;
+  std::string::size_type patIndex = 0;
+  do {
+    if (pat[patIndex] == '*') {
+      if (ip[ipIndex] == '.') {
+        return false;
+      }
+      while (ipIndex < ip.size() && ip[ipIndex] != '.') {
+        ++ipIndex;
+      }
+      patIndex++;
+    } else {
+      if (pat[patIndex] != ip[ipIndex]) {
+        return false;
+      }
+      ++ipIndex;
+      ++patIndex;
+    }
+  } while (ipIndex < ip.size() && patIndex < pat.size());
+
+  return ipIndex == ip.size() && patIndex == pat.size();
+}
 
 sails::RequestPacket* Server::Parse(
     std::shared_ptr<sails::net::Connector> connector) {

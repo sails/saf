@@ -13,6 +13,7 @@
 
 #include <json/json.h>
 #include <map>
+#include <vector>
 #include <string>
 
 namespace sails {
@@ -26,7 +27,10 @@ class Config {
       std::map<std::string, std::string> *modules);
   int get_listen_port();
   int get_monitor_port();
+  int get_net_thread();
   int get_handle_thread();
+  std::vector<std::string> AllowIPList();
+  std::vector<std::string> DenyIPList();
 
  private:
   Json::Value root;

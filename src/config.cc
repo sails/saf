@@ -13,12 +13,13 @@
 #include <stdlib.h>
 #include <fstream>
 #include <utility>
+#include "sails/base/string.h"
 
 namespace sails {
 
 Config::Config() {
   std::ifstream ifs;
-  ifs.open("../conf/sails.json");
+  ifs.open("../conf/saf.json");
   Json::Reader reader;
   if (!ifs) {
     printf("open file failed\n");
@@ -71,6 +72,35 @@ int Config::get_handle_thread() {
     return processor_num;
   }
   return root["handle_thread"].asInt();
+}
+
+int Config::get_net_thread() {
+  if (root["net_thread"].empty()) {
+      return 2;
+  }
+  return root["net_thread"].asInt();
+}
+
+std::vector<std::string> Config::AllowIPList() {
+  std::vector<std::string> allow_list;
+  if (!root["ip_limit"]["allow"].empty()) {
+      std::string allows = root["ip_limit"]["allow"].asString();
+      if (allows.size() > 0) {
+        allow_list = sails::base::split(allows, ",");
+      }
+  }
+  return allow_list;
+}
+
+std::vector<std::string> Config::DenyIPList() {
+  std::vector<std::string> deny_list;
+  if (!root["ip_limit"]["deny"].empty()) {
+      std::string denys = root["ip_limit"]["deny"].asString();
+      if (denys.size() > 0) {
+        deny_list = sails::base::split(denys, ",");
+      }
+  }
+  return deny_list;
 }
 
 }  // namespace sails
