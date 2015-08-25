@@ -46,7 +46,7 @@ void sails_init(int, char **) {
   }
 
   // 初始化server
-  server.Init(config.get_listen_port(), 2, 10,
+  server.Init(config.get_listen_port(), config.get_net_thread(), 10,
               config.get_handle_thread(), false, 2);
 
   monitor = new sails::Monitor(&server, config.get_monitor_port());
