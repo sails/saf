@@ -8,6 +8,7 @@ saf application framework
     1:基于google protobuf的rpc框架
     2:内置简单的http server用于查看系统状态
     3:模块化的管理,只用在lib中增加动态库就可以达到增加rpc service的目的
+    4:支持同步和异步调用模式(查看example/rpcping/client.cc)
 
 
 
@@ -19,7 +20,7 @@ saf application framework
     |Net Thread \----->|   Decode   |\                        /  +--------------+     |
     +-----------+\     +------------+ \  +-----------------+ /   +--------------+     |
                   \                    \>|                 |/    |              |     |
-                   \                   />|Dispacher Thread +-----+ Handle Thread+---->+
+                   \                   />|      queue      +-----+ Handle Thread+---->+
     +-----------+   \  +------------+ /  +-----------------+\    +--------------+     |
     |           |    \ |            |/                       \   +--------------+     |
     |Net Thread +----+>+   Decode   /                         \  |              |     |
@@ -86,3 +87,6 @@ memory:1G
 内置http服务器的默认绑定在端口8001上,所以可以通过输入localhost:8001/stat来查看统计信息:
 
 ![stat](./static/Screenshot/stat.png)
+
+
+                                                                             .
