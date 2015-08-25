@@ -87,6 +87,3 @@ memory:1G
 内置http服务器的默认绑定在端口8001上,所以可以通过输入localhost:8001/stat来查看统计信息:
 
 ![stat](./static/Screenshot/stat.png)
-
-
-                                                                             .
