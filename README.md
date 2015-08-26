@@ -5,10 +5,10 @@ saf application framework
 
 ## 特点 ##
 
-    1:基于google protobuf的rpc框架
-    2:内置简单的http server用于查看系统状态
-    3:模块化的管理,只用在lib中增加动态库就可以达到增加rpc service的目的
-    4:支持同步和异步调用模式(查看example/rpcping/client.cc)
+    1:基于google protobuf的rpc框架;
+    2:内置简单的http server用于查看系统状态;
+    3:模块化的管理,只用在lib中增加动态库就可以达到增加rpc service的目的;
+    4:sdk支持同步和异步调用模式、断线自动重连、调用超时设置;(查看example/rpcping/client.cc)
 
 
 
@@ -82,7 +82,7 @@ saf application framework
     |          6 |             6 |     144 | 66.186s | 217570 |
 
 
-通过测试可知，在一台普通的四核服务器上，基本上能达到17w/s的速度
+通过测试可知，在一台普通的四核服务器上，基本上能达到20w/s的速度
 (单独测试protobuf时，10w次序列化和反序列化用时2s)
 
 ## 统计 ##
