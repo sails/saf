@@ -16,7 +16,7 @@
 namespace sails {
 
 Server::Server() :
-    sails::net::EpollServer<sails::RequestPacket>() {
+    sails::net::EpollServer<sails::RecvData>() {
   // 得到配置的模块
   config.get_modules(&modules_name);
   // 注册模块
@@ -79,7 +79,7 @@ bool Server::ipMatch(const std::string& ip, const std::string& pat) {
   return ipIndex == ip.size() && patIndex == pat.size();
 }
 
-sails::RequestPacket* Server::Parse(
+sails::RecvData* Server::Parse(
     std::shared_ptr<sails::net::Connector> connector) {
 
   if (connector->readable() < sizeof(int)) {
@@ -92,17 +92,11 @@ sails::RequestPacket* Server::Parse(
   }
   // printf("parse packet len:%d\n", packetLen);
 
-  RequestPacket* request = new RequestPacket();
-  if (request->ParseFromArray(buffer+sizeof(int), packetLen)) {
-    connector->retrieve(packetLen + sizeof(int));
-    return request;
-  } else {
-    // 出错
-    delete request;
-    connector->retrieve(connector->readable());
-  }
+  RecvData *data =  reinterpret_cast<RecvData*>(malloc(sizeof(RecvData)));
+  data->content = reinterpret_cast<char*>(malloc(packetLen));
+  memcpy(data->content, buffer+sizeof(int), packetLen);
 
-  return NULL;
+  return data;
 }
 
 Server::~Server() {
@@ -112,23 +106,29 @@ Server::~Server() {
 
 
 void Server::handle(
-    const sails::net::TagRecvData<sails::RequestPacket> &recvData) {
+    const sails::net::TagRecvData<sails::RecvData> &recvData) {
 
-  sails::RequestPacket *request = recvData.data;
+  RequestPacket request;
   sails::ResponsePacket response;
+  if (request.ParseFromArray(recvData.data->content, recvData.data->len)) {
+    base::HandleChain<sails::RequestPacket*,
+                      sails::ResponsePacket*> handle_chain;
+    HandleRPC proto_decode;
+    handle_chain.add_handle(&proto_decode);
 
-  base::HandleChain<sails::RequestPacket*, sails::ResponsePacket*> handle_chain;
-  HandleRPC proto_decode;
-  handle_chain.add_handle(&proto_decode);
+    handle_chain.do_handle(&request, &response);
 
-  handle_chain.do_handle(request, &response);
+  } else {
+    // 出错
+    response.set_ret(ErrorCode::ERR_PARSER);
+  }
 
   if (response.ret() == ErrorCode::ERR_SUCCESS) {
     ServiceRegister::instance()->IncreaseCallTimes(
-        request->servicename(), 1, 0, 1);
+        request.servicename(), 1, 0, 1);
   } else {
     ServiceRegister::instance()->IncreaseCallTimes(
-        request->servicename(), 1, 1, 0);
+        request.servicename(), 1, 1, 0);
   }
 
   std::string response_body = response.SerializeAsString();

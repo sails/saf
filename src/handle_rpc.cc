@@ -72,13 +72,13 @@ void HandleRPC::do_handle(sails::RequestPacket *request,
           delete request_msg;
           delete response_mg;
         } else {
-          response->set_type(ErrorCode::ERR_FUN_NAME);
+          response->set_ret(ErrorCode::ERR_FUN_NAME);
         }
       } else {
-        response->set_type(ErrorCode::ERR_SERVICE_NAME);
+        response->set_ret(ErrorCode::ERR_SERVICE_NAME);
       }
     } else {
-      response->set_type(ErrorCode::ERR_SERVICE_NAME);
+      response->set_ret(ErrorCode::ERR_SERVICE_NAME);
     }
   }
   chain->do_handle(request, response);

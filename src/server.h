@@ -26,7 +26,22 @@ namespace sails {
 
 class HandleImpl;
 
-class Server : public sails::net::EpollServer<sails::RequestPacket> {
+struct RecvData {
+  int len;
+  char* content;
+  RecvData() {
+    len = 0;
+    content = NULL;
+  }
+};
+
+// 这儿有两种方式进行解析，一种是在parse中直接解析出protobuf的实体，
+// 然后传给handle线程调用，第二种是在parse中只做最基本的数据长度校验，
+// 然后让handle进行解析；第一种的好处是减少了一次内存分配，但是缺点是
+// 由于解析出protobuf实体的时间比较长，所以会阻塞网络线程接收数据，这
+// 使得我们需要更多的网络线程，而网络线程多又会造成锁冲突变多，所以这里
+// 还是直接使用第二种解析方式
+class Server : public sails::net::EpollServer<sails::RecvData> {
  public:
   Server();
 
@@ -40,13 +55,17 @@ class Server : public sails::net::EpollServer<sails::RequestPacket> {
   // 4：以上都不是，默认是允许
   bool isIpAllow(const std::string& ip);
 
-  sails::RequestPacket* Parse(
+  sails::RecvData* Parse(
       std::shared_ptr<sails::net::Connector> connector);
 
-  void handle(const sails::net::TagRecvData<sails::RequestPacket> &recvData);
+  void handle(const sails::net::TagRecvData<sails::RecvData> &recvData);
 
-  void Tdeleter(RequestPacket *data) {
-    delete data;
+  void Tdeleter(RecvData *data) {
+    if (data->content != NULL) {
+      free(data->content);
+      data->content = NULL;
+    }
+    free(data);
   }
 
   uint64_t send_data;

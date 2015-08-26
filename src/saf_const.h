@@ -19,6 +19,7 @@ namespace sails {
 
 enum ErrorCode {
   ERR_SUCCESS = 0                         // 成功
+  , ERR_PARSER                            // 解析出错
   , ERR_SERVICE_NAME                      // service没有找到
   , ERR_FUN_NAME                          // method没有找到
   , ERR_PARAM                             // 参数错误
