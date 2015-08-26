@@ -17,6 +17,8 @@
 
 namespace sails {
 
+#define MAX_PACKET_LEN 10000
+
 enum ErrorCode {
   ERR_SUCCESS = 0                         // 成功
   , ERR_PARSER                            // 解析出错

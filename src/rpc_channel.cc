@@ -32,7 +32,7 @@ bool HasRegisterDestoryProtobuffer = false;
 void destory_protobuf() {
   google::protobuf::ShutdownProtobufLibrary();
 }
-void HandleSigpipe(int sig) {
+void HandleSigpipe(int ) {
 }
 
 namespace sails {
@@ -79,7 +79,6 @@ RpcChannelImp::~RpcChannelImp() {
   if (recv_thread != NULL) {
     delete recv_thread;
   }
-
   if (send_thread != NULL) {
     delete send_thread;
   }

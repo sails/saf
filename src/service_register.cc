@@ -57,6 +57,9 @@ bool ServiceRegister::IncreaseCallTimes(const std::string& name,
                                         uint32_t callTimes,
                                         uint32_t failedTimes,
                                         uint32_t successTimes) {
+  if (name == "") {
+    return false;
+  }
   auto iter = service_map.find(name);
   if (iter != service_map.end() && iter->second != NULL) {
     iter->second->second.call_times += callTimes;

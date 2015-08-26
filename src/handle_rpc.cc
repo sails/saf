@@ -34,7 +34,7 @@ void HandleRPC::do_handle(sails::RequestPacket *request,
       response->set_ret(ErrorCode::ERR_SUCCESS);
       return;
     }
-    response->set_type(ErrorCode::ERR_OTHER);
+    response->set_ret(ErrorCode::ERR_OTHER);
     // cout << "service_name :" << request->servicename()
     // <<  "fun:" << request->funcname() << endl;
     if (!request->servicename().empty() && !request->funcname().empty()) {

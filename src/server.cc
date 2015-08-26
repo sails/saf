@@ -34,7 +34,7 @@ Server::Server() :
 
 
 bool Server::isIpAllow(const std::string& ip) {
-  for (std::string& pat : allow_list) {
+  for (const std::string& pat : allow_list) {
     if (pat == "all" || ipMatch(ip, pat)) {
       return true;
     }
@@ -90,12 +90,18 @@ sails::RecvData* Server::Parse(
   if (connector->readable() < packetLen + sizeof(int)) {
     return NULL;
   }
-  // printf("parse packet len:%d\n", packetLen);
+  if (packetLen > MAX_PACKET_LEN) {  // 最大10k
+    connector->retrieve(connector->readable());
+    return NULL;
+  }
+  // printf("parse packet len:%d, readable:%d\n",
+  // packetLen, connector->readable());
 
   RecvData *data =  reinterpret_cast<RecvData*>(malloc(sizeof(RecvData)));
+  data->len = packetLen;
   data->content = reinterpret_cast<char*>(malloc(packetLen));
   memcpy(data->content, buffer+sizeof(int), packetLen);
-
+  connector->retrieve(packetLen + sizeof(int));
   return data;
 }
 
@@ -122,7 +128,6 @@ void Server::handle(
     // 出错
     response.set_ret(ErrorCode::ERR_PARSER);
   }
-
   if (response.ret() == ErrorCode::ERR_SUCCESS) {
     ServiceRegister::instance()->IncreaseCallTimes(
         request.servicename(), 1, 0, 1);
