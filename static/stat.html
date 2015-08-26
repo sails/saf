@@ -45,7 +45,7 @@
     </div>
     
     <div class="process_info">
-      <label>Hanle Thread Info(num:{{HandleThreadNum}})</label>
+      <label>Handle Thread Info(num:{{HandleThreadNum}})</label>
       <table class="dataintable">
 	<tr>
           <th>no</th>
@@ -67,6 +67,26 @@
           {{/HandleRecvSize}}
 	</tr>
 	{{/HandleThreadSection}}
+      </table>
+    </div>
+    
+    <div class="process_info">
+      <label>Services Info(num:{{serivcesNum}})</label>
+      <table class="dataintable">
+        <tr>
+          <th>name</th>
+	  <th>call_times</th>
+          <th>success_times</th>
+          <th>failed_times</th>
+        </tr>
+        {{#ServiceSection}}
+	<tr>
+          <td>{{serviceName}}</td>
+          <td>{{callTimes}}</td>
+          <td>{{successTimes}}</td>
+          <td>{{failedTimes}}</td>
+	</tr>
+        {{/ServiceSection}}
       </table>
     </div>
   </body>

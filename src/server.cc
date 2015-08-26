@@ -11,6 +11,7 @@
 #include "src/server.h"
 #include "src/handle_rpc.h"
 #include "src/saf_const.h"
+#include "src/service_register.h"
 
 namespace sails {
 
@@ -122,19 +123,26 @@ void Server::handle(
 
   handle_chain.do_handle(request, &response);
 
+  if (response.ret() == ErrorCode::ERR_SUCCESS) {
+    ServiceRegister::instance()->IncreaseCallTimes(
+        request->servicename(), 1, 0, 1);
+  } else {
+    ServiceRegister::instance()->IncreaseCallTimes(
+        request->servicename(), 1, 1, 0);
+  }
 
-    std::string response_body = response.SerializeAsString();
-    int length = response_body.length();
-    char* sendBuf = reinterpret_cast<char*>(
-        malloc(length + sizeof(int)));
-    // printf("response packet len:%d\n", length);
-    memcpy(sendBuf, reinterpret_cast<char*>(&length), sizeof(int));
-    memcpy(sendBuf+sizeof(int), response_body.c_str(), length);
+  std::string response_body = response.SerializeAsString();
+  int length = response_body.length();
+  char* sendBuf = reinterpret_cast<char*>(
+      malloc(length + sizeof(int)));
+  // printf("response packet len:%d\n", length);
+  memcpy(sendBuf, reinterpret_cast<char*>(&length), sizeof(int));
+  memcpy(sendBuf+sizeof(int), response_body.c_str(), length);
 
-    send_data = send_data + length + sizeof(int);
-    send(sendBuf, length + sizeof(int),
+  send_data = send_data + length + sizeof(int);
+  send(sendBuf, length + sizeof(int),
        recvData.ip, recvData.port, recvData.uid, recvData.fd);
-    free(sendBuf);
+  free(sendBuf);
 }
 
 }  // namespace sails

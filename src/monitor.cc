@@ -11,11 +11,13 @@
 
 #include "src/monitor.h"
 #include <string>
+#include <vector>
 #include "ctemplate/template.h"
 #ifdef __linux__
 #include "sails/system/cpu_usage.h"
 #endif
 #include "sails/system/mem_usage.h"
+#include "src/service_register.h"
 
 namespace sails {
 
@@ -90,6 +92,19 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
                                    handlestatus.handle_queue_capacity);
     handlethread_dict->SetIntValue("HandleThread_handle_queue_size",
                                    handlestatus.handle_queue_size);
+  }
+
+  // service
+  std::vector<ServiceRegister::ServiceStat> services =
+      ServiceRegister::instance()->GetAllServiceStat();
+  dict["serivcesNum"] = services.size();
+  for (size_t i = 0; i < services.size(); ++i) {
+    ctemplate::TemplateDictionary* ServiceSection =
+        dict.AddSectionDictionary("ServiceSection");
+    ServiceSection->SetValue("serviceName", services[i].name);
+    ServiceSection->SetIntValue("callTimes", services[i].call_times);
+    ServiceSection->SetIntValue("failedTimes", services[i].failed_times);
+    ServiceSection->SetIntValue("successTimes", services[i].success_times);
   }
 
   std::string body;

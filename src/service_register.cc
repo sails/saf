@@ -21,31 +21,62 @@ ServiceRegister *ServiceRegister::_instance = NULL;
 
 bool ServiceRegister::register_service(
     google::protobuf::Service *service) {
-
-  service_map.insert(
-      map<string, Service*>::value_type(
-          std::string(service->GetDescriptor()->name()),
-          service));
+  auto serviceInfo = new std::pair<
+    google::protobuf::Service*, ServiceStat>(service, ServiceStat());
+  service_map[std::string(service->GetDescriptor()->name())] =
+          serviceInfo;
 
   return true;
 }
 
 google::protobuf::Service* ServiceRegister::get_service(string key) {
-  map<string, Service*>::iterator iter;
-  iter = service_map.find(key);
-  if (iter == service_map.end()) {
-    return NULL;
-  } else {
-    return iter->second;
+  auto iter = service_map.find(key);
+  if (iter != service_map.end() && iter->second != NULL) {
+    return iter->second->first;
   }
+  return NULL;
 }
+
+std::vector<ServiceRegister::ServiceStat> ServiceRegister::GetAllServiceStat() {
+  std::vector<ServiceStat> services;
+  for (auto& item : service_map) {
+    if (item.first.empty() || item.second->first == NULL) {
+      continue;
+    }
+    ServiceStat  stat;
+    stat.name = item.first;
+    stat.call_times = item.second->second.call_times;
+    stat.failed_times = item.second->second.failed_times;
+    stat.success_times = item.second->second.success_times;
+    services.push_back(stat);
+  }
+  return services;
+}
+
+bool ServiceRegister::IncreaseCallTimes(const std::string& name,
+                                        uint32_t callTimes,
+                                        uint32_t failedTimes,
+                                        uint32_t successTimes) {
+  auto iter = service_map.find(name);
+  if (iter != service_map.end() && iter->second != NULL) {
+    iter->second->second.call_times += callTimes;
+    iter->second->second.failed_times += failedTimes;
+    iter->second->second.success_times += successTimes;
+    return true;
+  }
+  return false;
+}
+
 
 void ServiceRegister::release_services() {
   ServiceRegister* s = ServiceRegister::instance();
-  map<string, Service*>::iterator iter;
-  for (iter = s->service_map.begin();
+  for (auto iter = s->service_map.begin();
        iter != s->service_map.end(); ++iter) {
     if (iter->second != NULL) {
+      if (iter->second->first != NULL) {
+        delete iter->second->first;
+        iter->second->first = NULL;
+      }
       delete iter->second;
       iter->second = NULL;
     }
