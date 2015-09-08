@@ -1,5 +1,4 @@
 syntax = "proto3";
-
 package sails;
 
 // 请求与响应包定义

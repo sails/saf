@@ -3,9 +3,17 @@ VERSION_MINOR  		:= 0
 VERSION_PATCH  		:= 0
 SAF_VERSION    		:= $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
 
+CXX		= g++
+AR		= ar
+RANLIB		= ranlib
+#CXX		= arm-linux-androideabi-g++
+#AR		= arm-linux-androideabi-ar
+#RANLIB		= arm-linux-androideabi-ranlib
+
+
 SAILS			= ../deps/sails
 CTEMPLATE		= ../deps/ctemplate/src
-CFLAGS			= -std=c++11 -O0 -g -fno-omit-frame-pointer -L../lib -L./ -W -Wall
+CFLAGS			= -std=c++11 -O0 -g -fno-omit-frame-pointer -L../lib -L./ -W -Wall -I/usr/local/include/
 INCLUDE			= -I./ -I../ -I../deps/ -I$(SAILS) -I$(CTEMPLATE)
 
 INSTALL_PATH		= ../bin
@@ -20,19 +28,21 @@ OBJECTS=saf.o \
 	config.o monitor.o saf_packet.pb.o
 
 saf: versionfile $(OBJECTS)
-	g++ $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -pthread -lprotobuf -ldl -ljsoncpp  -lsails -lctemplate -lprofiler
+	$(CXX) $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -pthread -lprotobuf -ldl -ljsoncpp  -lsails -lctemplate -lprofiler
 
 
 CLIENTOBJS=rpc_channel.o rpc_controller.o saf_packet.pb.o
-libsafclient.a: versionfile $(CLIENTOBJS)
-	-rm $@
-	ar -r $@ $(CLIENTOBJS)
+libsafclient: versionfile $(CLIENTOBJS)
+	-rm $@.so $@.a
+	$(AR) -r $@.a $(CLIENTOBJS) #为了在后面移除所有的.o文件时还能恢复需要的.o
 	rm -f *.o
-	ar x ../lib/libsails.a
-	ar x $@
-	ar cru $@ *.o
+	$(AR) x ../lib/libsails.a
+	$(AR) x $@.a
+	$(AR) cru $@.a *.o
+	$(CXX) $(CFLAGS) -shared -fPIC -o $@.so *.o -lprotobuf
 	rm -f *.o
-	cp $@ ../lib/libsafclient.${SAF_VERSION}.a
+	cp $@.a ../lib/$@.${SAF_VERSION}.a
+	cp $@.so ../lib/$@.${SAF_VERSION}.so
 
 versionfile:
 	echo -e "// This is a generated file.\n\n\
@@ -42,14 +52,14 @@ namespace sails {\n\
 #define VERSION_PATCH ${VERSION_PATCH}\n\
 }  // namespace sails" > version.h
 %.o: %.cc
-	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
+	$(CXX) $(CFLAGS) $(INCLUDE) -fPIC -c -o $@ $<
 
 
 -include $(OBJECTS:.o=.d) # $(OBJECTS.o=.d)replace all *.o to *.d
 
 %.d: %.cc
 	set -e; rm -f $@; \
-	g++ -MM $(CFLAGS) $(INCLUDE) $< > $@.$$$$; \
+	$(CXX) -MM $(CFLAGS) $(INCLUDE) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 
