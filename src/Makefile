@@ -13,7 +13,7 @@ RANLIB		= ranlib
 
 SAILS			= ../deps/sails
 CTEMPLATE		= ../deps/ctemplate/src
-CFLAGS			= -std=c++11 -O0 -g -fno-omit-frame-pointer -L../lib -L./ -W -Wall -I/usr/local/include/
+CFLAGS			= -std=c++11 -O0 -g -fno-omit-frame-pointer -L./ -L../lib -W -Wall -I/usr/local/include/
 INCLUDE			= -I./ -I../ -I../deps/ -I$(SAILS) -I$(CTEMPLATE)
 
 INSTALL_PATH		= ../bin
@@ -34,12 +34,15 @@ saf: versionfile $(OBJECTS)
 CLIENTOBJS=rpc_channel.o rpc_controller.o saf_packet.pb.o
 libsafclient: versionfile $(CLIENTOBJS)
 	-rm $@.so $@.a
+	#静态库为了使用者方便，把libsails库一加打包，这样就不用使用者再连接sails库了
+	#而动态库因为本身会自动链接它需要的动态库，所以不用打包在一起，不然这样反而因为
+	#sails库的实现更新了而去更新libsafclient库
 	$(AR) -r $@.a $(CLIENTOBJS) #为了在后面移除所有的.o文件时还能恢复需要的.o
 	rm -f *.o
-	$(AR) x ../lib/libsails.a
 	$(AR) x $@.a
+	$(CXX) $(CFLAGS) -shared -fPIC -o $@.so *.o -lprotobuf -lsails
+	$(AR) x ../lib/libsails.a
 	$(AR) cru $@.a *.o
-	$(CXX) $(CFLAGS) -shared -fPIC -o $@.so *.o -lprotobuf
 	rm -f *.o
 	cp $@.a ../lib/$@.${SAF_VERSION}.a
 	cp $@.so ../lib/$@.${SAF_VERSION}.so

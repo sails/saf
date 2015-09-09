@@ -1,3 +1,4 @@
+syntax = "proto2";
 option java_package = "com.xiaoji.net";
 package sails;
 
