@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <list>
 #include "ping.pb.h"
 
@@ -15,7 +14,7 @@ class PingServiceImp : public PingService {
   }
 };
 
-}
+}  // namespace sails
 
 extern "C" {
   std::list<google::protobuf::Service*>* register_module() {
@@ -23,7 +22,6 @@ extern "C" {
         new std::list<google::protobuf::Service*>();
     sails::PingServiceImp *service = new sails::PingServiceImp();
     list->push_back(service);
-    printf("start register\n");
     return list;
   }
 }
