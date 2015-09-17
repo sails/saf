@@ -48,7 +48,7 @@ saf application framework
 1:下载源码
 
     git clone --recursive https://github.com/sails/saf.git
-2:执行编辑脚本:
+2:执行编译脚本:
 
     ./build.sh
 3:编译测试样例:
