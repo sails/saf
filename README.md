@@ -41,7 +41,7 @@ saf application framework
 
 ## 编译例子 ##
 
-1:下载源码,它依赖与sails公共库:
+1:下载源码,它依赖protobuf和sails公共库,所以先安装protobuf3.0及以上库，再安装:
 
     git clone --recursive https://github.com/sails/saf.git
 2:执行编辑脚本:
