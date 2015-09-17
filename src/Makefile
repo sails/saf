@@ -31,7 +31,7 @@ saf: versionfile $(OBJECTS)
 	$(CXX) $(CFLAGS) -Wl,-rpath,../lib/ -o saf $(OBJECTS) -pthread -lprotobuf -ldl -ljsoncpp  -lsails -lctemplate -lprofiler
 
 
-CLIENTOBJS=rpc_channel.o rpc_controller.o saf_packet.pb.o
+CLIENTOBJS=rpc_client.o rpc_channel.o rpc_controller.o saf_packet.pb.o
 libsafclient: versionfile $(CLIENTOBJS)
 	-rm $@.so $@.a
 	#静态库为了使用者方便，把libsails库一加打包，这样就不用使用者再连接sails库了
@@ -43,7 +43,7 @@ libsafclient: versionfile $(CLIENTOBJS)
 	$(CXX) $(CFLAGS) -shared -fPIC -o $@.so *.o -lprotobuf -lsails
 	$(AR) x ../lib/libsails.a
 	$(AR) cru $@.a *.o
-	rm -f *.o
+	#rm -f *.o
 	cp $@.a ../lib/$@.${SAF_VERSION}.a
 	cp $@.so ../lib/$@.${SAF_VERSION}.so
 

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <iostream>
-#include "rpc_channel.h"
-#include "rpc_controller.h"
+#include "rpc_client.h"
 #include "ping.pb.h"
 #include <sys/time.h>
 #include <unistd.h>
@@ -18,7 +17,6 @@ int async_recvtimes = 0;
 struct timeval aync_starttime;
 void DoneCallback(PingMessage *response) {
   async_recvtimes++;
-  // printf("async done call back time:%lld\n", response->time());
   if (async_recvtimes  == async_times) {
     // 结束
     struct timeval t2;
@@ -30,12 +28,8 @@ void DoneCallback(PingMessage *response) {
 }
 
 void sync_test() {
-  int clients = 1;
-  RpcChannelImp channel("127.0.0.1", 8000);
-  // channel.KeepLive(true);
-  RpcControllerImp controller;
-
-  PingService::Stub stub(&channel);
+  RpcClient client("127.0.0.1", 8000);
+  PingService::Stub stub(client.Channel());
 
   PingMessage request;
 
@@ -45,7 +39,7 @@ void sync_test() {
   request.set_time(t1.tv_sec*1000+int(t1.tv_usec/1000));
   for (int i = 0; i < sync_times; i++) {
     PingMessage response;
-    stub.ping(&controller, &request, &response, NULL);
+    stub.ping(client.Controller(), &request, &response, NULL);
     //std::cout << response.DebugString() << std::endl;
   }    
 
@@ -57,10 +51,8 @@ void sync_test() {
 }
 
 void async_test() {
-  RpcChannelImp channel("127.0.0.1", 8000);
-  RpcControllerImp controller;
-
-  PingService::Stub stub(&channel);
+  RpcClient client("127.0.0.1", 8000);
+  PingService::Stub stub(client.Channel());
 
   PingMessage request;
   // get time
@@ -72,11 +64,11 @@ void async_test() {
     PingMessage* response = new PingMessage();
     responseList.push_back(response);
     Closure* callback = NewCallback(&DoneCallback, response);
-    stub.ping(&controller, &request, response, callback);
+    stub.ping(client.Controller(), &request, response, callback);
   }
+  
   // wait result
   sleep(3);
-  
   while (responseList.size() > 0) {
     PingMessage* response = responseList.back();
     if (response != NULL) {
@@ -84,14 +76,12 @@ void async_test() {
     }
     responseList.pop_back();
   }
-  printf("final async recv times:%d\n", async_recvtimes);
 }
 
 int main(int argc, char *argv[])
 {
   sync_test();
   async_test();
-
   return 0;
 }
 
