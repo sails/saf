@@ -41,7 +41,10 @@ saf application framework
 
 ## 编译例子 ##
 
-它依赖protobuf公共库,所以先安装protobuf3.0及以上版本，安装protobuf参照：https://github.com/google/protobuf
+它依赖protobuf公共库,所以先安装protobuf3.0及以上版本，安装protobuf参照：
+
+    https://github.com/google/protobuf
+
 1:下载源码
 
     git clone --recursive https://github.com/sails/saf.git
