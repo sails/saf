@@ -32,20 +32,26 @@ saf: versionfile $(OBJECTS)
 
 
 CLIENTOBJS=rpc_client.o rpc_channel.o rpc_controller.o saf_packet.pb.o
+ifeq ($(UNAME), Linux)
+ShareLibSuffix 		= so
+endif
+ifeq ($(UNAME), Darwin)
+ShareLibSuffix 		= dylib
+endif
 libsafclient: versionfile $(CLIENTOBJS)
-	-rm $@.so $@.a
+	-rm $@.${ShareLibSuffix} $@.a
 	#静态库为了使用者方便，把libsails库一加打包，这样就不用使用者再连接sails库了
 	#而动态库因为本身会自动链接它需要的动态库，所以不用打包在一起，不然这样反而因为
 	#sails库的实现更新了而去更新libsafclient库
 	$(AR) -r $@.a $(CLIENTOBJS) #为了在后面移除所有的.o文件时还能恢复需要的.o
 	rm -f *.o
 	$(AR) x $@.a
-	$(CXX) $(CFLAGS) -shared -fPIC -o $@.so *.o -lprotobuf -lsails
+	$(CXX) $(CFLAGS) -shared -fPIC -install_name @rpath/$@.${SAF_VERSION}.${ShareLibSuffix} -o $@.${ShareLibSuffix} *.o -lprotobuf -lsails
 	$(AR) x ../lib/libsails.a
 	$(AR) cru $@.a *.o
 	#rm -f *.o
 	cp $@.a ../lib/$@.${SAF_VERSION}.a
-	cp $@.so ../lib/$@.${SAF_VERSION}.so
+	cp $@.${ShareLibSuffix} ../lib/$@.${SAF_VERSION}.${ShareLibSuffix}
 
 versionfile:
 	echo -e "// This is a generated file.\n\n\
