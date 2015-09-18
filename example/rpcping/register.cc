@@ -25,7 +25,3 @@ extern "C" {
     return list;
   }
 }
-
-
-
-

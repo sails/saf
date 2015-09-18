@@ -48,20 +48,24 @@ saf application framework
 1:下载源码
 
     git clone --recursive https://github.com/sails/saf.git
-2:执行编译脚本:
 
-    ./build.sh
+2:编译:
+
+    make depends
+    make;make deploy;
+
 3:编译测试样例:
 
-    cd example
-    ./build_test.sh
-4:运行测试,比如运行echo_sync:
+    make examples
 
-    ./src/server
+4:配置测试程序(conf/saf.json):
+
+    "modules" : [{"name":"test", "path":"../lib/service_test.so"}]
+
+5:运行测试,比如运行echo_sync:
+
+    ./bin/saf
     ./example/echo_sync/client
-
-5:增加子模块,配置conf/sails.json:
-在modules里增加一行,name是子模块名,path是子模块动态库的路径
 
 
 ## 性能 ##
