@@ -47,7 +47,7 @@ libsafclient: versionfile $(CLIENTOBJS)
 	rm -f *.o
 	$(AR) x $@.a
 	$(CXX) $(CFLAGS) -shared -fPIC -install_name @rpath/$@.${SAF_VERSION}.${ShareLibSuffix} -o $@.${ShareLibSuffix} *.o -lprotobuf -lsails
-	$(AR) x ../lib/libsails.a
+	$(AR) x /usr/local/lib/libsails.a
 	$(AR) cru $@.a *.o
 	#rm -f *.o
 	cp $@.a ../lib/$@.${SAF_VERSION}.a
