@@ -54,12 +54,16 @@ libsafclient: versionfile $(CLIENTOBJS)
 	cp $@.${ShareLibSuffix} ../lib/$@.${SAF_VERSION}.${ShareLibSuffix}
 
 versionfile:
+	#生成协议文件
+	protoc --cpp_out=./ saf_packet.proto
+	#版本配置文件
 	echo -e "// This is a generated file.\n\n\
 namespace sails {\n\
 #define VERSION_MAJOR ${VERSION_MAJOR}\n\
 #define VERSION_MINOR ${VERSION_MINOR}\n\
 #define VERSION_PATCH ${VERSION_PATCH}\n\
 }  // namespace sails" > version.h
+
 %.o: %.cc
 	$(CXX) $(CFLAGS) $(INCLUDE) -fPIC -c -o $@ $<
 
