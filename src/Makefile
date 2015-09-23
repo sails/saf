@@ -46,7 +46,8 @@ libsafclient: versionfile $(CLIENTOBJS)
 	$(AR) -r $@.a $(CLIENTOBJS) #为了在后面移除所有的.o文件时还能恢复需要的.o
 	rm -f *.o
 	$(AR) x $@.a
-	$(CXX) $(CFLAGS) -shared -fPIC -install_name @rpath/$@.${SAF_VERSION}.${ShareLibSuffix} -o $@.${ShareLibSuffix} *.o -lprotobuf -lsails
+	$(CXX) $(CFLAGS) -shared -fPIC -o $@.${ShareLibSuffix} *.o -lprotobuf -lsails
+	[ "$(UNAME)" = "Darwin" ] &&  { install_name_tool -id @rpath/$@.${SAF_VERSION}.${ShareLibSuffix}  libsails.dylib;} ||  echo ""
 	$(AR) x /usr/local/lib/libsails.a
 	$(AR) cru $@.a *.o
 	#rm -f *.o
