@@ -31,4 +31,9 @@ make client
 make rpcping_module
 rm *.o
 
+cd ../rank
+make client
+make rank_module
+rm *.o
+
 cd ../
