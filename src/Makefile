@@ -54,8 +54,6 @@ libsafclient: versionfile $(CLIENTOBJS)
 	cp $@.${ShareLibSuffix} ../lib/$@.${SAF_VERSION}.${ShareLibSuffix}
 
 versionfile:
-	#生成协议文件
-	protoc --cpp_out=./ saf_packet.proto
 	#版本配置文件
 	echo -e "// This is a generated file.\n\n\
 namespace sails {\n\
