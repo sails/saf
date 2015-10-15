@@ -14,9 +14,11 @@ examples:
 
 depends:
 	#depends sails
-	make -C deps/sails; echo;make install -C deps/sails;
+	make -C deps/sails;
+	cp deps/sails/libsails.a ./lib/
 	#depends ctemplate
-	cd deps/ctemplate; ./configure;make; sudo make install; cd ../../;
+	cd deps/ctemplate; ./configure;make; cd ../../;
+	cp deps/ctemplate/.libs/libctemplate.a ./lib/
 
 clean:
 	make clean -C src;

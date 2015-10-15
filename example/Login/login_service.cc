@@ -7,6 +7,7 @@
 #include <sails/log/logging.h>
 #include <string>
 #include "login_config.h"
+#include "sails/base/util.h"
 
 namespace sails {
 
@@ -22,9 +23,9 @@ void LoginServiceImpl::login(::google::protobuf::RpcController* controller,
                              ::sails::LoginResponse* response,
                              ::google::protobuf::Closure* done) {
   if (request != NULL && response != NULL) {
-    LoginResponse_ResultCode result_code;
+    LoginResponse_ResultCode result_code =
+        LoginResponse_ResultCode::LoginResponse_ResultCode_LOGIN_OTHER_ERR;
     if (login_check(request)) {  // check username and password
-
       // get room info
       int roomid = request->roomid();
       response->set_roomid(request->roomid());
@@ -37,7 +38,6 @@ void LoginServiceImpl::login(::google::protobuf::RpcController* controller,
           if (room_info.usercount >= config.max_player()) {
             result_code = LoginResponse_ResultCode_LOGIN_ROOM_FULL;
           } else {
-
             // post session
             std::string session = get_session();
             response->set_session(session);
@@ -89,7 +89,6 @@ size_t read_callback(void *buffer, size_t size, size_t nmemb, void *userp) {
   struct ptr_string *data = (struct ptr_string*)userp;
   size_t new_len = data->len + size*nmemb;
   char *ptr = reinterpret_cast<char*>(malloc(new_len+1));
-  memset(ptr, 0, new_len+1);
   memcpy(ptr, data->ptr, data->len);
   memcpy(ptr+data->len, buffer, size*nmemb);
   free(data->ptr);
@@ -100,7 +99,6 @@ size_t read_callback(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 bool login_check(const LoginRequest *request) {
-
   char signstr[500] = {'\0'};
   std::string strsignMd5;
   char time_str[100] = {'\0'};
@@ -126,14 +124,16 @@ bool login_check(const LoginRequest *request) {
     snprintf(param, sizeof(param), "model=netgame&action=authuser&uid=%s&"
             "ticket=%s&time=%s&sign=%s&line=10",
             request->username().c_str(),
-            base::url_encode(password.c_str(), password_encoding),
+             base::url_encode(password.c_str(), password_encoding,
+                              sizeof(password_encoding)),
             time_str, strsignMd5.c_str());
 
   } else {
     snprintf(param, sizeof(param), "model=netgame&action=authuser&uid=%s&"
              "ticket=%s&time=%s&sign=%s",
              request->username().c_str(),
-             base::url_encode(password.c_str(), password_encoding),
+             base::url_encode(password.c_str(), password_encoding,
+                              sizeof(password_encoding)),
              time_str, strsignMd5.c_str());
   }
 
@@ -155,12 +155,8 @@ bool login_check(const LoginRequest *request) {
 
 std::string get_session() {
   // gen session
-  unsigned int time_num = time(0);
-  srand(time_num);
-  int rand_num = rand();
-
   char temp_str[100] = {'\0'};
-  sprintf(temp_str, "%d%d", time_num, rand_num);
+  snprintf(temp_str, sizeof(temp_str), "%llu", sails::base::GetUID());
   std::string session = crypto::MD5(temp_str).toString();
 
   return session;
