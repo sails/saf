@@ -114,7 +114,8 @@ void RpcChannelImp::CallMethod(const MethodDescriptor* method,
 
 std::string RpcChannelImp::RawCallMethod(const std::string& service_name,
                                          const std::string& method_name,
-                                         const std::string& request_data) {
+                                         const std::string& request_data,
+                                         int data_type) {
   if (stop || isbreak) {
     return "";
   }
@@ -122,7 +123,12 @@ std::string RpcChannelImp::RawCallMethod(const std::string& service_name,
   sn++;
   RequestPacket *packet = new RequestPacket();
   packet->set_version(VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH);
-  packet->set_type(MessageType::RPC_REQUEST);
+  if (data_type == 1) {
+      packet->set_type(MessageType::RPC_REQUEST);
+  } else {
+      packet->set_type(MessageType::RPC_REQUEST_JSON);
+  }
+
   packet->set_sn(sn);
   packet->set_servicename(service_name);
   packet->set_funcname(method_name);

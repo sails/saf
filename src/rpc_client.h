@@ -41,9 +41,13 @@ class RpcClient {
 
   // 提供另一种调用方式,方便当使用这个sdk的语言不是c++时，
   // 它可能会通过某种方式传string过来，但是此时不能直接使用这种语言的Message类
+  // 当调用的语言不支持protobuf时，也可以传json结构来调用，这样对目标语言限制
+  // 更小了，当然json结构传输时数据量更大
+  // data_type：1标准的protobuf二进制流，2json结构
   std::string RawCallMethod(const std::string& service_name,
                             const std::string& method_name,
-                            const std::string& request_data);
+                            const std::string& request_data,
+                            int data_type = 1);
  private:
   RpcChannelImp* channel;
   RpcControllerImp* controller;

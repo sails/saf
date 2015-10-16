@@ -2,6 +2,7 @@
 #include "unistd.h"
 #include <iostream>
 #include "rpc_client.h"
+#include "rpc_util.h"
 #include "addressbook.pb.h"
 #include <thread>
 
@@ -9,8 +10,8 @@ using namespace sails;
 using namespace google::protobuf;
 using namespace test;
 
+// 通过标准rpc调用
 void client_test(int port) {
-  printf("connect thread\n");
   RpcClient client("127.0.0.1", port);
   AddressBookService::Stub stub(client.Channel());
 
@@ -23,11 +24,12 @@ void client_test(int port) {
 
     AddressBook response;
     stub.add(client.Controller(), &request, &response, NULL);
-    std::cout << response.DebugString() << std::endl;
+    // std::cout << response.DebugString() << std::endl;
     // sleep(20);  在测试最大并发数时，可以让他sleep，并且把server的超时时间改大
   }
 }
 
+// 通过protobuf二进制流传输
 void client_test2(int port) {
   RpcClient client("127.0.0.1", port);
   for (int i = 0; i < 10; i++) {
@@ -42,10 +44,37 @@ void client_test2(int port) {
     if (response_raw.length() > 0) {
       AddressBook response;
       response.ParseFromString(response_raw);
-      std::cout << response.DebugString() << std::endl;
+      // std::cout << response.DebugString() << std::endl;
     }
   }
 }
+
+// 通过json结构传递参数
+void client_test3(int port) {
+  RpcClient client("127.0.0.1", port);
+  for (int i = 0; i < 1; i++) {
+    AddressBook request;
+    Person *p1 = request.add_person();
+    p1->set_id(1);
+    p1->set_name("xu");
+    p1->set_email("sailsxu@gmail.com");
+
+    sails::JsonPBConvert convert;
+    //std::string request_json = convert.ToJson(request, false);
+    std::string request_json = "{\"person\":[{\"name\":\"xu\",\"id\":1,\"email\":\"sailsxu@gmail.com\"}]}";
+    std::string response_raw = client.RawCallMethod(
+        "AddressBookService", "add", request_json, 2);
+    
+    printf("response json:\n%s\n", response_raw.c_str());
+    if (response_raw.length() > 0) {
+      AddressBook response;
+      convert.FromJson(response_raw, &response);
+      std::cout << "debug str:" << std::endl
+                << response.DebugString() << std::endl;
+    }
+  }
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -62,8 +91,7 @@ int main(int argc, char *argv[])
   std::vector<std::thread> vec_thread;
   for(int i = 0; i < clients; i++) {
     vec_thread.push_back(
-        std::thread(client_test2, port)
-                         );
+        std::thread(client_test3, port));
   }
   for(int i = 0 ; i < vec_thread.size(); i++) {
     vec_thread[i].join();

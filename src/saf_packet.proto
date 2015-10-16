@@ -18,7 +18,7 @@ message RequestPacket {
   string serviceName = 4;  // 服务
   string funcName = 5;  // 方法
   //google.protobuf.Any detail = 6;  // 消息体，any类型更明确，但是对swig调用方式兼容性不好
-  string detail = 6;  // 消息体
+  bytes detail = 6;  // 消息体，不要用string，因为具体消息经过编码后不是标准utf-8 string格式
   int32 timeout = 7;  // 超时时间，-1表示永不，以秒为单位
   map<string, string> context = 8;  // 业务上下文
   map<string, string> status = 9;  // 框架协议上下文
@@ -30,5 +30,5 @@ message ResponsePacket {
   uint32 sn = 3;  // 序列号
   int32 ret = 4;  // 错误类型
   // google.protobuf.Any detail = 5;  // 消息体
-  string detail = 5;  // 消息体
+  bytes detail = 5;  // 消息体
 }

@@ -116,7 +116,8 @@ void Server::handle(
 
   RequestPacket request;
   sails::ResponsePacket response;
-  if (request.ParseFromArray(recvData.data->content, recvData.data->len)) {
+  std::string message(recvData.data->content, recvData.data->len);
+  if (request.ParseFromString(message)) {
     base::HandleChain<sails::RequestPacket*,
                       sails::ResponsePacket*> handle_chain;
     HandleRPC proto_decode;
@@ -135,12 +136,11 @@ void Server::handle(
     ServiceRegister::instance()->IncreaseCallTimes(
         request.servicename(), 1, 1, 0);
   }
-
   std::string response_body = response.SerializeAsString();
+
   int length = response_body.length();
   char* sendBuf = reinterpret_cast<char*>(
       malloc(length + sizeof(int)));
-  // printf("response packet len:%d\n", length);
   memcpy(sendBuf, reinterpret_cast<char*>(&length), sizeof(int));
   memcpy(sendBuf+sizeof(int), response_body.c_str(), length);
 

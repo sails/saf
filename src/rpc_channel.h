@@ -72,7 +72,8 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
 
   std::string RawCallMethod(const std::string& service_name,
                             const std::string& method_name,
-                            const std::string& request_data);
+                            const std::string& request_data,
+                            int data_type = 1);
 
  private:
   int sync_call(const google::protobuf::MethodDescriptor *method,

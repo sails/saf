@@ -33,9 +33,10 @@ enum MessageType {
   MIN_TYPE = 10
 
   , PING                                  // 心跳包
-  , RPC_REQUEST                           // rpc请求
-  , PRC_RESPONSE                          // rpc响应
-
+  , RPC_REQUEST                           // rpc标准请求
+  , RPC_RESPONSE                          // rpc标准响应
+  , RPC_REQUEST_JSON                      // rpc请求中的内容是json
+  , RPC_RESPONSE_JSON                     // rpc响应中的内容是json
   , MAX_TYPE
 };
 
