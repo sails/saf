@@ -3,20 +3,13 @@ package sails;
 
 // 请求与响应包定义
 
-import "google/protobuf/any.proto";
+// import "google/protobuf/any.proto";
 
 // 因为protobuf中的int值是根据值的大小来设置占几位的
 // 所以定义时就可以直接用int而不是int8，int16之类更小的范围
 // v3中有一个any类型，它能很好的代表要传输的具体消息
 // 不然就要用string这个类型了，不过这样没有any类型明确
-// ErrorStatus status = ...;
-// for (const Any& detail : status.details()) {
-//   if (detail.IsType<NetworkErrorDetails>()) {
-//     NetworkErrorDetails network_error;
-//     detail.UnpackTo(&network_error);
-//     ... processing network_error ...
-//   }
-// }
+
 
 message RequestPacket {
   uint32 version = 1;  // sdk版本
@@ -24,7 +17,8 @@ message RequestPacket {
   uint32 sn = 3;  // 序列号
   string serviceName = 4;  // 服务
   string funcName = 5;  // 方法
-  google.protobuf.Any detail = 6;  // 消息体
+  //google.protobuf.Any detail = 6;  // 消息体，any类型更明确，但是对swig调用方式兼容性不好
+  string detail = 6;  // 消息体
   int32 timeout = 7;  // 超时时间，-1表示永不，以秒为单位
   map<string, string> context = 8;  // 业务上下文
   map<string, string> status = 9;  // 框架协议上下文
@@ -35,5 +29,6 @@ message ResponsePacket {
   uint32 type = 2;  // 响应类型
   uint32 sn = 3;  // 序列号
   int32 ret = 4;  // 错误类型
-  google.protobuf.Any detail = 5;  // 消息体
+  // google.protobuf.Any detail = 5;  // 消息体
+  string detail = 5;  // 消息体
 }

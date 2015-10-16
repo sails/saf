@@ -47,8 +47,8 @@ libsafclient: versionfile $(CLIENTOBJS)
 	rm -f *.o
 	$(AR) x $@.a
 	$(CXX) $(CFLAGS) -shared -fPIC -o $@.${ShareLibSuffix} *.o -lprotobuf -lsails
-	[ "$(UNAME)" = "Darwin" ] &&  { install_name_tool -id @rpath/$@.${SAF_VERSION}.${ShareLibSuffix}  libsails.dylib;} ||  echo ""
-	$(AR) x /usr/local/lib/libsails.a
+	[ "$(UNAME)" = "Darwin" ] &&  { install_name_tool -id @rpath/$@.${SAF_VERSION}.${ShareLibSuffix} $@.${ShareLibSuffix};} ||  echo ""
+	$(AR) x ../lib/libsails.a
 	$(AR) cru $@.a *.o
 	#rm -f *.o
 	cp $@.a ../lib/$@.${SAF_VERSION}.a

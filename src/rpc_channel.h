@@ -51,6 +51,7 @@ class TicketSession {
   std::condition_variable notify;
   google::protobuf::Closure* done;  // 用于异步请求
   google::protobuf::Message* response;
+  std::string response_raw;
 };
 
 class RpcChannelImp : public ::google::protobuf::RpcChannel {
@@ -68,6 +69,10 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
                   const google::protobuf::Message* request,
                   google::protobuf::Message* response,
                   google::protobuf::Closure* done);
+
+  std::string RawCallMethod(const std::string& service_name,
+                            const std::string& method_name,
+                            const std::string& request_data);
 
  private:
   int sync_call(const google::protobuf::MethodDescriptor *method,

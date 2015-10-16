@@ -41,4 +41,11 @@ google::protobuf::RpcController* RpcClient::Controller() {
   return controller;
 }
 
+
+std::string RpcClient::RawCallMethod(const std::string& service_name,
+                                     const std::string& method_name,
+                                     const std::string& request_data) {
+  return channel->RawCallMethod(service_name, method_name, request_data);
+}
+
 }  // namespace sails

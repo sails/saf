@@ -112,6 +112,39 @@ void RpcChannelImp::CallMethod(const MethodDescriptor* method,
   }
 }
 
+std::string RpcChannelImp::RawCallMethod(const std::string& service_name,
+                                         const std::string& method_name,
+                                         const std::string& request_data) {
+  if (stop || isbreak) {
+    return "";
+  }
+  std::unique_lock<std::mutex> locker(request_mutex);
+  sn++;
+  RequestPacket *packet = new RequestPacket();
+  packet->set_version(VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH);
+  packet->set_type(MessageType::RPC_REQUEST);
+  packet->set_sn(sn);
+  packet->set_servicename(service_name);
+  packet->set_funcname(method_name);
+  // packet->mutable_detail()->PackFrom(*request);
+  packet->set_detail(request_data);
+  packet->set_timeout(timeout);
+
+  ticketManager[sn] = new TicketSession(sn, NULL, NULL);
+  ticketManager[sn]->calltime = now;
+  request_list->push_back(packet);
+
+  // wait notify
+  while (ticketManager[sn]->errcode == 1) {
+    ticketManager[sn]->notify.wait(locker);
+  }
+  std::string response = ticketManager[sn]->response_raw;
+  delete ticketManager[sn];
+  ticketManager.erase(sn);
+  return response;
+}
+
+
 sails::ResponsePacket* RpcChannelImp::parser(
     net::Connector *connector) {
 
@@ -155,7 +188,8 @@ void RpcChannelImp::async_all(const google::protobuf::MethodDescriptor *method,
   packet->set_sn(sn);
   packet->set_servicename(method->service()->name());
   packet->set_funcname(method->name());
-  packet->mutable_detail()->PackFrom(*request);
+  // packet->mutable_detail()->PackFrom(*request);
+  packet->set_detail(request->SerializeAsString());
   packet->set_timeout(timeout);
 
   ticketManager[sn] = new TicketSession(sn, response, done);
@@ -183,7 +217,8 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   packet->set_sn(sn);
   packet->set_servicename(method->service()->name());
   packet->set_funcname(method->name());
-  packet->mutable_detail()->PackFrom(*request);
+  // packet->mutable_detail()->PackFrom(*request);
+  packet->set_detail(request->SerializeAsString());
   packet->set_timeout(timeout);
 
   ticketManager[sn] = new TicketSession(sn, response, NULL);
@@ -269,8 +304,15 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
             }
             std::unique_lock<std::mutex> locker(channel->request_mutex);
             if (channel->ticketManager[resp->sn()] != NULL) {
+              /*
               resp->detail().UnpackTo(
                   channel->ticketManager[resp->sn()]->response);
+              */
+              channel->ticketManager[resp->sn()]->response_raw = resp->detail();
+              if (channel->ticketManager[resp->sn()]->response != NULL) {
+                channel->ticketManager[resp->sn()]->response->ParseFromString(
+                  resp->detail());
+              }
               channel->ticketManager[resp->sn()]->errcode = 0;
               if (channel->ticketManager[resp->sn()]->done != NULL) {
                 // 异步，那么就在这里调用

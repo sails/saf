@@ -50,6 +50,7 @@ void HandleRPC::do_handle(sails::RequestPacket *request,
           Message *response_mg
               = service->GetResponsePrototype(method_desc).New();
 
+          /*
           // 类型相同
           std::string typeurl = string(internal::kTypeGoogleApisComPrefix)
                                 + request_msg->GetDescriptor()->full_name();
@@ -62,6 +63,19 @@ void HandleRPC::do_handle(sails::RequestPacket *request,
                 method_desc, NULL, request_msg, response_mg, NULL);
 
             response->mutable_detail()->PackFrom(*response_mg);
+            response->set_version(request->version());
+            response->set_type(request->type());
+            response->set_sn(request->sn());
+            response->set_ret(ErrorCode::ERR_SUCCESS);
+          } else {
+            response->set_ret(ErrorCode::ERR_PARAM);
+          }
+          */
+          if (request_msg->ParseFromString(request->detail())) {
+            service->CallMethod(
+                method_desc, NULL, request_msg, response_mg, NULL);
+
+            response->set_detail(response_mg->SerializeAsString());
             response->set_version(request->version());
             response->set_type(request->type());
             response->set_sn(request->sn());

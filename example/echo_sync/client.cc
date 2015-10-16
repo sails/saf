@@ -16,14 +16,34 @@ void client_test(int port) {
 
   for(int i = 0; i < 10; i++) {
     AddressBook request;
-    AddressBook response;
     Person *p1 = request.add_person();
     p1->set_id(1);
     p1->set_name("xu");
     p1->set_email("sailsxu@gmail.com");
+
+    AddressBook response;
     stub.add(client.Controller(), &request, &response, NULL);
-    // std::cout << response.DebugString() << std::endl;
+    std::cout << response.DebugString() << std::endl;
     // sleep(20);  在测试最大并发数时，可以让他sleep，并且把server的超时时间改大
+  }
+}
+
+void client_test2(int port) {
+  RpcClient client("127.0.0.1", port);
+  for (int i = 0; i < 10; i++) {
+    AddressBook request;
+    Person *p1 = request.add_person();
+    p1->set_id(1);
+    p1->set_name("xu");
+    p1->set_email("sailsxu@gmail.com");
+
+    std::string response_raw = client.RawCallMethod(
+        "AddressBookService", "add", request.SerializeAsString());
+    if (response_raw.length() > 0) {
+      AddressBook response;
+      response.ParseFromString(response_raw);
+      std::cout << response.DebugString() << std::endl;
+    }
   }
 }
 
@@ -42,7 +62,7 @@ int main(int argc, char *argv[])
   std::vector<std::thread> vec_thread;
   for(int i = 0; i < clients; i++) {
     vec_thread.push_back(
-        std::thread(client_test, port)
+        std::thread(client_test2, port)
                          );
   }
   for(int i = 0 ; i < vec_thread.size(); i++) {
