@@ -67,7 +67,8 @@ php_libsafclient:versionfile $(CLIENTOBJS) safclient_php_wrap
 	$(CXX) $(CFLAGS) -shared -fPIC  -Wl,-flat_namespace,-U,_zend_register_resource,-U,_zend_rsrc_list_get_rsrc_type,-U,_zend_wrong_param_count,-U,_compiler_globals,-U,_zend_hash_find,-U,_gc_remove_zval_from_buffer,-U,_zend_register_long_constant,-U,_zend_get_constant,-U,__efree,-U,__emalloc,-U,_zend_error,-U,__zend_list_find,-U,_main,-U,__zend_get_parameters_array_ex,-U,_zend_register_list_destructors_ex,-U,__zval_copy_ctor_func,-U,__convert_to_string,-U,__zend_hash_add_or_update,-U,_executor_globals,-U,_zval_used_for_init,-U,_zval_is_true,-U,__object_init,-U,_php_strtolower,-U,__estrndup,-U,__object_init_ex,-U,_zend_lookup_class,-U,_convert_to_boolean,-U,_convert_to_long -o $@.${ShareLibSuffix} *.o -lprotobuf
 	[ "$(UNAME)" = "Darwin" ] &&  { install_name_tool -id @rpath/$@.${SAF_VERSION}.${ShareLibSuffix} $@.${ShareLibSuffix};} ||  echo ""
 	#rm -f *.o
-	cp $@.${ShareLibSuffix} ../lib/$@.${SAF_VERSION}.${ShareLibSuffix}
+	#php加载的时候，在osx下也是so文件
+	cp $@.${ShareLibSuffix} ../lib/$@.${SAF_VERSION}.so
 
 versionfile:
 	#版本配置文件

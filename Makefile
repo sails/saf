@@ -6,6 +6,7 @@ saf:
 	make saf -C src; echo;
 libclient:
 	make libsafclient -C src; echo;
+	make php_libsafclient -C src; echo
 
 deploy:
 	make install -C src;
