@@ -54,6 +54,21 @@ libsafclient: versionfile $(CLIENTOBJS)
 	cp $@.a ../lib/$@.${SAF_VERSION}.a
 	cp $@.${ShareLibSuffix} ../lib/$@.${SAF_VERSION}.${ShareLibSuffix}
 
+
+safclient_php_wrap:
+	swig -php -c++  -o php_safclient.cc saf_swig.i
+	$(CXX) $(CFLAGS) `php-config --includes` -fPIC -c -o php_safclient.o php_safclient.cc
+php_libsafclient:versionfile $(CLIENTOBJS) safclient_php_wrap
+	-rm $@.${ShareLibSuffix} $@.a
+	$(AR) -r $@.a $(CLIENTOBJS) php_safclient.o #为了在后面移除所有的.o文件时还能恢复需要的.o
+	rm -f *.o
+	$(AR) x $@.a
+	$(AR) x ../lib/libsails.a
+	$(CXX) $(CFLAGS) -shared -fPIC  -Wl,-flat_namespace,-U,_zend_register_resource,-U,_zend_rsrc_list_get_rsrc_type,-U,_zend_wrong_param_count,-U,_compiler_globals,-U,_zend_hash_find,-U,_gc_remove_zval_from_buffer,-U,_zend_register_long_constant,-U,_zend_get_constant,-U,__efree,-U,__emalloc,-U,_zend_error,-U,__zend_list_find,-U,_main,-U,__zend_get_parameters_array_ex,-U,_zend_register_list_destructors_ex,-U,__zval_copy_ctor_func,-U,__convert_to_string,-U,__zend_hash_add_or_update,-U,_executor_globals,-U,_zval_used_for_init,-U,_zval_is_true,-U,__object_init,-U,_php_strtolower,-U,__estrndup,-U,__object_init_ex,-U,_zend_lookup_class,-U,_convert_to_boolean,-U,_convert_to_long -o $@.${ShareLibSuffix} *.o -lprotobuf
+	[ "$(UNAME)" = "Darwin" ] &&  { install_name_tool -id @rpath/$@.${SAF_VERSION}.${ShareLibSuffix} $@.${ShareLibSuffix};} ||  echo ""
+	#rm -f *.o
+	cp $@.${ShareLibSuffix} ../lib/$@.${SAF_VERSION}.${ShareLibSuffix}
+
 versionfile:
 	#版本配置文件
 	echo -e "// This is a generated file.\n\n\
@@ -76,7 +91,7 @@ namespace sails {\n\
 	rm -f $@.$$$$
 
 clean:
-	-rm -f *.o *.d
+	-rm -f *.o *.d safclient.php php_safclient.h php_safclient.cc
 install:saf
 	if [ ! -d ${INSTALL_PATH} ]; then  mkdir -p ${INSTALL_PATH}; fi
 	cp saf ../bin/saf${SAF_VERSION}
