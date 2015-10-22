@@ -41,27 +41,15 @@ RpcChannelImp::RpcChannelImp(string ip, int port):
     ip(ip), port(port) {
   connector = new net::Connector();
   request_list = new base::ThreadQueue<RequestPacket*>();
-  assert(connector->connect(this->ip.c_str(), this->port, true));
   sn = 0;
   stop = false;
   keeplive = false;
-  recv_thread = new std::thread(recv_response, this);
-  send_thread = new std::thread(send_request, this);
-  if (!HasRegisterDestoryProtobuffer) {
-    HasRegisterDestoryProtobuffer = true;
-    atexit(destory_protobuf);
-  }
-  isbreak = false;
-  // 当连接关闭时，还在发数据，会导致sigpipe信号
-  sigpipe_action.sa_handler = HandleSigpipe;
-  sigemptyset(&sigpipe_action.sa_mask);
-  sigpipe_action.sa_flags = 0;
-  sigaction(SIGPIPE, &sigpipe_action, NULL);
-
+  recv_thread = NULL;
+  send_thread = NULL;
+  isbreak = true;
+  HasRegisterDestoryProtobuffer = false;
+  timer = NULL;
   timeout = 10;
-  timer = new base::Timer(1);
-  timer->init(RpcChannelImp::check_call_timeout, this, 1);
-  now = time(NULL);
 }
 
 RpcChannelImp::~RpcChannelImp() {
@@ -69,8 +57,16 @@ RpcChannelImp::~RpcChannelImp() {
     stop = true;
     shutdown(connector->get_connector_fd(), 2);
     connector->close();
-    recv_thread->join();
-    send_thread->join();
+    if (recv_thread != NULL) {
+      // recv线程会马上返回
+      recv_thread->join();
+    }
+    if (send_thread != NULL) {
+      // 发送一个空的，放pop返回
+      RequestPacket *packet = new RequestPacket();
+      request_list->push_back(packet);
+      send_thread->join();
+    }
   }
   if (timer != NULL) {
     delete timer;
@@ -96,6 +92,30 @@ RpcChannelImp::~RpcChannelImp() {
     delete request_list;
     request_list = NULL;
   }
+}
+
+
+bool RpcChannelImp::init() {
+  if (!connector->connect(this->ip.c_str(), this->port, true)) {
+    return false;
+  }
+  recv_thread = new std::thread(recv_response, this);
+  send_thread = new std::thread(send_request, this);
+  if (!HasRegisterDestoryProtobuffer) {
+    HasRegisterDestoryProtobuffer = true;
+    atexit(destory_protobuf);
+  }
+  isbreak = false;
+  // 当连接关闭时，还在发数据，会导致sigpipe信号
+  sigpipe_action.sa_handler = HandleSigpipe;
+  sigemptyset(&sigpipe_action.sa_mask);
+  sigpipe_action.sa_flags = 0;
+  sigaction(SIGPIPE, &sigpipe_action, NULL);
+
+  timer = new base::Timer(1);
+  timer->init(RpcChannelImp::check_call_timeout, this, 1);
+  now = time(NULL);
+  return true;
 }
 
 void RpcChannelImp::CallMethod(const MethodDescriptor* method,
@@ -247,6 +267,10 @@ void RpcChannelImp::send_request(RpcChannelImp* channel) {
     static int empty_request = 0;
     channel->request_list->pop_front(request, 100);
     if (request != NULL) {
+      if (channel->stop) {  // 说明是一个空包
+        delete request;
+        continue;
+      }
       empty_request = 0;
       std::string data = request->SerializeAsString();
       int len = data.length();

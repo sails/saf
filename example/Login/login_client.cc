@@ -12,6 +12,9 @@ using namespace google::protobuf;
 void client_test(int port) {
     printf("connect thread\n");
     RpcChannelImp channel("127.0.0.1", port);
+    if (!channel.init()) {
+      printf("can't connect\n");
+    }
     RpcControllerImp controller;
 
     LoginService::Stub stub(&channel);

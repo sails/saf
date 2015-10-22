@@ -26,12 +26,21 @@ namespace sails {
 
 class HandleImpl;
 
-struct RecvData {
-  int len;
-  char* content;
-  RecvData() {
-    len = 0;
-    content = NULL;
+// 处理过程中的消息实体，它会包含很多用于统计的附加信息
+struct ReqMessage {
+  RequestPacket* request;  // 请求消息体
+  std::string reqData;  // 请求消息体
+  ResponsePacket* response;  // 响应消息体
+  int64_t startTime;  // 请求开始时间
+  int64_t endTime;  // 请求结束时间
+  // 是否需要染色，根据账号设置，之后对于已经染色的调用链接日志详细记录
+  bool dyeing;
+  ReqMessage() {
+    request = NULL;
+    response = NULL;
+    startTime = 0;
+    endTime = 0;
+    dyeing = false;
   }
 };
 
@@ -41,7 +50,7 @@ struct RecvData {
 // 由于解析出protobuf实体的时间比较长，所以会阻塞网络线程接收数据，这
 // 使得我们需要更多的网络线程，而网络线程多又会造成锁冲突变多，所以这里
 // 还是直接使用第二种解析方式
-class Server : public sails::net::EpollServer<sails::RecvData> {
+class Server : public sails::net::EpollServer<sails::ReqMessage> {
  public:
   Server();
 
@@ -55,15 +64,19 @@ class Server : public sails::net::EpollServer<sails::RecvData> {
   // 4：以上都不是，默认是允许
   bool isIpAllow(const std::string& ip);
 
-  sails::RecvData* Parse(
+  sails::ReqMessage* Parse(
       std::shared_ptr<sails::net::Connector> connector);
 
-  void handle(const sails::net::TagRecvData<sails::RecvData> &recvData);
+  void handle(const sails::net::TagRecvData<sails::ReqMessage> &requestMessage);
 
-  void Tdeleter(RecvData *data) {
-    if (data->content != NULL) {
-      free(data->content);
-      data->content = NULL;
+  void Tdeleter(ReqMessage *data) {
+    if (data->request != NULL) {
+      delete data->request;
+      data->request = NULL;
+    }
+    if (data->response != NULL) {
+      delete data->response;
+      data->response = NULL;
     }
     free(data);
   }

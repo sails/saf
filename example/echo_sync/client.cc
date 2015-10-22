@@ -13,6 +13,9 @@ using namespace test;
 // 通过标准rpc调用
 void client_test(int port) {
   RpcClient client("127.0.0.1", port);
+  if (!client.init()) {
+    return;
+  }
   AddressBookService::Stub stub(client.Channel());
 
   for(int i = 0; i < 10; i++) {
@@ -32,6 +35,9 @@ void client_test(int port) {
 // 通过protobuf二进制流传输
 void client_test2(int port) {
   RpcClient client("127.0.0.1", port);
+  if (!client.init()) {
+    return;
+  }
   for (int i = 0; i < 10; i++) {
     AddressBook request;
     Person *p1 = request.add_person();
@@ -52,7 +58,10 @@ void client_test2(int port) {
 // 通过json结构传递参数
 void client_test3(int port) {
   RpcClient client("127.0.0.1", port);
-  for (int i = 0; i < 1; i++) {
+  if (!client.init()) {
+    return;
+  }
+  for (int i = 0; i < 10000; i++) {
     AddressBook request;
     Person *p1 = request.add_person();
     p1->set_id(1);
@@ -64,7 +73,6 @@ void client_test3(int port) {
     std::string request_json = "{\"person\":[{\"name\":\"xu\",\"id\":1,\"email\":\"sailsxu@gmail.com\"}]}";
     std::string response_raw = client.RawCallMethod(
         "AddressBookService", "add", request_json, 2);
-    
     printf("response json:\n%s\n", response_raw.c_str());
     if (response_raw.length() > 0) {
       AddressBook response;

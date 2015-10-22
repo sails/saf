@@ -16,7 +16,7 @@
 namespace sails {
 
 Server::Server() :
-    sails::net::EpollServer<sails::RecvData>() {
+    sails::net::EpollServer<sails::ReqMessage>() {
   // 得到配置的模块
   config.get_modules(&modules_name);
   // 注册模块
@@ -79,7 +79,7 @@ bool Server::ipMatch(const std::string& ip, const std::string& pat) {
   return ipIndex == ip.size() && patIndex == pat.size();
 }
 
-sails::RecvData* Server::Parse(
+sails::ReqMessage* Server::Parse(
     std::shared_ptr<sails::net::Connector> connector) {
 
   if (connector->readable() < sizeof(int)) {
@@ -97,10 +97,10 @@ sails::RecvData* Server::Parse(
   // printf("parse packet len:%d, readable:%d\n",
   // packetLen, connector->readable());
 
-  RecvData *data =  reinterpret_cast<RecvData*>(malloc(sizeof(RecvData)));
-  data->len = packetLen;
-  data->content = reinterpret_cast<char*>(malloc(packetLen));
-  memcpy(data->content, buffer+sizeof(int), packetLen);
+  ReqMessage *data =  reinterpret_cast<ReqMessage*>(malloc(sizeof(ReqMessage)));
+  new(data) ReqMessage();
+  // 设置时间
+  data->reqData = std::string(buffer+sizeof(int), packetLen);
   connector->retrieve(packetLen + sizeof(int));
   return data;
 }
@@ -112,12 +112,11 @@ Server::~Server() {
 
 
 void Server::handle(
-    const sails::net::TagRecvData<sails::RecvData> &recvData) {
+    const sails::net::TagRecvData<sails::ReqMessage> &recvData) {
 
   RequestPacket request;
   sails::ResponsePacket response;
-  std::string message(recvData.data->content, recvData.data->len);
-  if (request.ParseFromString(message)) {
+  if (request.ParseFromString(recvData.data->reqData)) {
     base::HandleChain<sails::RequestPacket*,
                       sails::ResponsePacket*> handle_chain;
     HandleRPC proto_decode;

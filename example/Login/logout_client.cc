@@ -14,6 +14,9 @@ int main(int argc, char *argv[])
     int clients = 1;
 
     RpcChannelImp channel("127.0.0.1", 8000);
+    if (!channel.init()) {
+      printf("can't connect\n");
+    }
     RpcControllerImp controller;
 
     LoginService::Stub stub(&channel);

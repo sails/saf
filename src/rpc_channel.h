@@ -59,6 +59,8 @@ class RpcChannelImp : public ::google::protobuf::RpcChannel {
   RpcChannelImp(std::string ip, int port);
   ~RpcChannelImp();
 
+  bool init();
+
   // 发心跳包, 断线自动重连
   void KeepLive(bool keeplive) {
     this->keeplive = keeplive;

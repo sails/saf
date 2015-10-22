@@ -30,7 +30,9 @@ void DoneCallback(PingMessage *response) {
 void sync_test() {
   RpcClient client("127.0.0.1", 8000);
   PingService::Stub stub(client.Channel());
-
+  if (!client.init()) {
+    printf("can't connect\n");
+  }
   PingMessage request;
 
   // get time
@@ -53,7 +55,9 @@ void sync_test() {
 void async_test() {
   RpcClient client("127.0.0.1", 8000);
   PingService::Stub stub(client.Channel());
-
+  if (!client.init()) {
+    printf("can't connect\n");
+  }
   PingMessage request;
   // get time
   gettimeofday(&aync_starttime, NULL);

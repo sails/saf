@@ -54,7 +54,7 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
     ctemplate::TemplateDictionary* netthread_dict;
     netthread_dict = dict.AddSectionDictionary("NetThreadSection");
 
-    net::NetThread<sails::RecvData>::NetThreadStatus netstatus =
+    net::NetThread<sails::ReqMessage>::NetThreadStatus netstatus =
         server->GetNetThreadStatus(i);
 
     netthread_dict->SetIntValue("NetThread_NO", i);
@@ -77,7 +77,7 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
     ctemplate::TemplateDictionary* handlethread_dict;
     handlethread_dict = dict.AddSectionDictionary("HandleThreadSection");
 
-    net::HandleThread<sails::RecvData>::HandleThreadStatus handlestatus =
+    net::HandleThread<sails::ReqMessage>::HandleThreadStatus handlestatus =
         server->GetHandleThreadStatus(i);
 
     handlethread_dict->SetIntValue("HandleThread_NO", i);

@@ -35,7 +35,9 @@ class RpcClient {
  public:
   RpcClient(std::string ip, int port, bool KeepLive = false);
   ~RpcClient();
-
+  // 提供init方法来处理连接，不能通过构造函数，
+  // 否则调用方不能通过返回值知道是否连接上
+  bool init();
   google::protobuf::RpcChannel* Channel();
   google::protobuf::RpcController* Controller();
 

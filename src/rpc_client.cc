@@ -33,6 +33,10 @@ RpcClient::~RpcClient() {
   }
 }
 
+bool RpcClient::init() {
+  return channel->init();
+}
+
 google::protobuf::RpcChannel* RpcClient::Channel() {
   return channel;
 }
@@ -46,7 +50,8 @@ std::string RpcClient::RawCallMethod(const std::string& service_name,
                                      const std::string& method_name,
                                      const std::string& request_data,
                                      int data_type) {
-  return channel->RawCallMethod(service_name, method_name, request_data, data_type);
+  return channel->RawCallMethod(service_name,
+                                method_name, request_data, data_type);
 }
 
 }  // namespace sails

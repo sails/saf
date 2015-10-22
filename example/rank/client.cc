@@ -20,6 +20,9 @@
 
 int main() {
   sails::RpcChannelImp channel("127.0.0.1", 8000);
+  if (!channel.init()) {
+    printf("can't not connect\n");
+  }
   sails::RpcControllerImp controller;
 
   sails::RankService::Stub stub(&channel);
