@@ -12,6 +12,7 @@
 #include "src/handle_rpc.h"
 #include "src/saf_const.h"
 #include "src/service_register.h"
+#include "sails/base/time_t.h"
 
 namespace sails {
 
@@ -99,7 +100,7 @@ sails::ReqMessage* Server::Parse(
 
   ReqMessage *data =  reinterpret_cast<ReqMessage*>(malloc(sizeof(ReqMessage)));
   new(data) ReqMessage();
-  // 设置时间
+  data->startTime = sails::base::TimeT::getNowMs();
   data->reqData = std::string(buffer+sizeof(int), packetLen);
   connector->retrieve(packetLen + sizeof(int));
   return data;
@@ -128,12 +129,18 @@ void Server::handle(
     // 出错
     response.set_ret(ErrorCode::ERR_PARSER);
   }
+
+  // 设置结束时间
+  recvData.data->endTime = sails::base::TimeT::getNowMs();
+
   if (response.ret() == ErrorCode::ERR_SUCCESS) {
     ServiceRegister::instance()->IncreaseCallTimes(
-        request.servicename(), 1, 0, 1);
+        request.servicename(), 1, 0, 1,
+        recvData.data->endTime-recvData.data->startTime);
   } else {
     ServiceRegister::instance()->IncreaseCallTimes(
-        request.servicename(), 1, 1, 0);
+        request.servicename(), 1, 1, 0,
+        recvData.data->endTime-recvData.data->startTime);
   }
   std::string response_body = response.SerializeAsString();
 

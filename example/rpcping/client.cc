@@ -8,11 +8,11 @@
 using namespace sails;
 using namespace google::protobuf;
 
-int sync_times = 1;
+int sync_times = 100000;
 // 注意这个异步数据的大小问题，因为内核默认socket缓冲区是65535
 // 而如果是本机测试，可能会导致数据瞬间超出这个限制，出现内核丢包
 // 而一个response的数据大小在70字节左右，所以这里最好不能大于10w
-int async_times = 1;
+int async_times = 100000;
 int async_recvtimes = 0;
 struct timeval aync_starttime;
 void DoneCallback(PingMessage *response) {
@@ -42,7 +42,7 @@ void sync_test() {
   for (int i = 0; i < sync_times; i++) {
     PingMessage response;
     stub.ping(client.Controller(), &request, &response, NULL);
-    std::cout << response.DebugString() << std::endl;
+    // std::cout << response.DebugString() << std::endl;
   }    
 
   struct timeval t2;
@@ -84,7 +84,7 @@ void async_test() {
 
 int main(int argc, char *argv[])
 {
-  sync_test();
+  // sync_test();
   async_test();
   return 0;
 }

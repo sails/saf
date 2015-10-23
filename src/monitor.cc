@@ -105,6 +105,11 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
     ServiceSection->SetIntValue("callTimes", services[i].call_times);
     ServiceSection->SetIntValue("failedTimes", services[i].failed_times);
     ServiceSection->SetIntValue("successTimes", services[i].success_times);
+    for (int index = 0; index < 11; index++) {
+      char time_name[5] = {"\0"};
+      snprintf(time_name, sizeof(time_name), "L%d", index);
+      ServiceSection->SetIntValue(time_name, services[i].spendTime[index]);
+    }
   }
 
   std::string body;

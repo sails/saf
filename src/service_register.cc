@@ -48,6 +48,9 @@ std::vector<ServiceRegister::ServiceStat> ServiceRegister::GetAllServiceStat() {
     stat.call_times = item.second->second.call_times;
     stat.failed_times = item.second->second.failed_times;
     stat.success_times = item.second->second.success_times;
+    for (int i = 0; i < 11; i++) {
+      stat.spendTime[i] = item.second->second.spendTime[i];
+    }
     services.push_back(stat);
   }
   return services;
@@ -56,7 +59,8 @@ std::vector<ServiceRegister::ServiceStat> ServiceRegister::GetAllServiceStat() {
 bool ServiceRegister::IncreaseCallTimes(const std::string& name,
                                         uint32_t callTimes,
                                         uint32_t failedTimes,
-                                        uint32_t successTimes) {
+                                        uint32_t successTimes,
+                                        int64_t spendTime) {
   if (name == "") {
     return false;
   }
@@ -65,6 +69,12 @@ bool ServiceRegister::IncreaseCallTimes(const std::string& name,
     iter->second->second.call_times += callTimes;
     iter->second->second.failed_times += failedTimes;
     iter->second->second.success_times += successTimes;
+    int time_level = (spendTime / 50);
+    if (time_level >= 10) {  // 超过500毫秒
+      time_level = 10;
+    }
+    iter->second->second.spendTime[time_level] =
+        iter->second->second.spendTime[time_level] + 1;
     return true;
   }
   return false;

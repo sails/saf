@@ -27,10 +27,15 @@ class ServiceRegister {
     uint32_t call_times;
     uint32_t failed_times;
     uint32_t success_times;
+    // 调用时间，分成10个等级，每级之间50ms，第11等级大于500ms
+    int spendTime[11];
     ServiceStat() : name("") {
       call_times = 0;
       failed_times = 0;
       success_times = 0;
+      for (int i = 0; i < 11; i++) {
+        spendTime[i] = 0;
+      }
     }
   };
   bool register_service(google::protobuf::Service *service);
@@ -38,7 +43,8 @@ class ServiceRegister {
   google::protobuf::Service* get_service(std::string key);
 
   bool IncreaseCallTimes(const std::string& name, uint32_t callTimes,
-                         uint32_t failedTimes, uint32_t successTimes);
+                         uint32_t failedTimes, uint32_t successTimes,
+                         int64_t spendTime);
 
   std::vector<ServiceStat> GetAllServiceStat();
 
