@@ -5,13 +5,14 @@
 #include "rpc_util.h"
 #include "addressbook.pb.h"
 #include <thread>
+#include "sails/log/logging.h"
 
 using namespace sails;
 using namespace google::protobuf;
 using namespace test;
 
 // 通过标准rpc调用
-void client_test(int port) {
+void client_test0(int port) {
   RpcClient client("127.0.0.1", port);
   if (!client.init()) {
     return;
@@ -30,6 +31,32 @@ void client_test(int port) {
     // std::cout << response.DebugString() << std::endl;
     // sleep(20);  在测试最大并发数时，可以让他sleep，并且把server的超时时间改大
   }
+}
+
+// 通过标准rpc调用，但是每次重新连接，测试一个线程下1s支持多少次调用
+// 由于在重连和重新建立、释放资源上要花时间，经过测试，差不多一个线程支持1000次
+void client_test1(int port) {
+  int calltimes = 0;
+  INFO_LOG("client", "start client_test1");
+  for(int i = 0; i < 10000; i++) {
+    RpcClient client("127.0.0.1", port);
+    if (!client.init()) {
+      return;
+    }
+    AddressBookService::Stub stub(client.Channel());
+    AddressBook request;
+    Person *p1 = request.add_person();
+    p1->set_id(1);
+    p1->set_name("xu");
+    p1->set_email("sailsxu@gmail.com");
+
+    AddressBook response;
+    stub.add(client.Controller(), &request, &response, NULL);
+    calltimes++;
+    // std::cout << response.DebugString() << std::endl;
+    // sleep(20);  在测试最大并发数时，可以让他sleep，并且把server的超时时间改大
+  }
+  INFO_LOG("client", "end client_test1, call %d times", calltimes);
 }
 
 // 通过protobuf二进制流传输
@@ -99,7 +126,7 @@ int main(int argc, char *argv[])
   std::vector<std::thread> vec_thread;
   for(int i = 0; i < clients; i++) {
     vec_thread.push_back(
-        std::thread(client_test3, port));
+        std::thread(client_test1, port));
   }
   for(int i = 0 ; i < vec_thread.size(); i++) {
     vec_thread[i].join();
