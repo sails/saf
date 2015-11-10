@@ -1,11 +1,11 @@
 SAILS			= ../../deps/sails
 SRC			= ../../src
 CFLAGS			= -std=c++11 -O0 -g
-INCLUDE			= -I../../deps/ -I$(SRC) -I$(SAILS)
-LIBPATH			= ../../lib
+INCLUDE			= -I../../deps/ -I$(SRC) -I$(SAILS) -I/usr/local/include
+LIBPATH			= -L../../lib -L/usr/local/lib/
 
 client: client.o ping.pb.o
-	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) -L$(LIBPATH) client.o ping.pb.o -o client -pthread -lsafclient -lprotobuf
+	g++ $(CFLAGS) -Wl,-rpath,../../lib -L$(LIBPATH) client.o ping.pb.o -o client -pthread -lsafclient -lprotobuf
 
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<

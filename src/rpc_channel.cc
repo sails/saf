@@ -21,7 +21,7 @@
 #include "sails/net/connector.h"
 #include "src/saf_packet.pb.h"
 #include "src/saf_const.h"
-#include "src/version.h"
+#include "src/saf_version.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/descriptor.h"
 

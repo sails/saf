@@ -13,7 +13,7 @@ RANLIB		= ranlib
 
 SAILS			= ../deps/sails
 CTEMPLATE		= ../deps/ctemplate/src
-CFLAGS			= -std=c++11 -O0 -g -fno-omit-frame-pointer -L./ -L../lib -W -Wall -I/usr/local/include/
+CFLAGS			= -std=c++11 -O0 -g -fno-omit-frame-pointer -L./ -L/usr/local/lib -L../lib -W -Wall -I/usr/local/include/
 INCLUDE			= -I./ -I../ -I../deps/ -I$(SAILS) -I$(CTEMPLATE)
 
 INSTALL_PATH		= ../bin
@@ -77,7 +77,7 @@ namespace sails {\n\
 #define VERSION_MAJOR ${VERSION_MAJOR}\n\
 #define VERSION_MINOR ${VERSION_MINOR}\n\
 #define VERSION_PATCH ${VERSION_PATCH}\n\
-}  // namespace sails" > version.h
+}  // namespace sails" > saf_version.h
 
 %.o: %.cc
 	$(CXX) $(CFLAGS) $(INCLUDE) -fPIC -c -o $@ $<

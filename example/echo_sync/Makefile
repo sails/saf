@@ -1,11 +1,12 @@
 SAILS			= ../../deps/sails
 SRC			= ../../src
 CFLAGS			= -std=c++11 -O2
-INCLUDE			= -I../../deps/ -I$(SRC) -I$(SRC) -I$(SAILS)
+INCLUDE			= -I../../deps/ -I$(SRC) -I$(SRC) -I$(SAILS) -I/usr/local/include
 LIBPATH			= ../../lib
+LINKPATH		= -L$(LIBPATH) -L/usr/local/lib
 
 client: client.o addressbook.pb.o
-	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) -L$(LIBPATH) client.o addressbook.pb.o -o client -pthread -lsafclient.1.0.0 -lsails  -lprotobuf
+	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) $(LINKPATH) client.o addressbook.pb.o -o client -pthread -lsafclient.1.0.0 -lsails  -lprotobuf
 
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
@@ -21,7 +22,7 @@ endif
 
 servicecc=register.cc addressbook.pb.cc
 service_test: $(servicecc)
-	g++ -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) -L$(LIBPATH) -lsails -lprotobuf
+	g++ -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) $(LINKPATH) -lsails -lprotobuf
 	mv $(TARGET) $(LIBPATH)/$(TARGET)
 clean:
 	rm *.o *.d
