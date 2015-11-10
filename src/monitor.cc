@@ -119,6 +119,11 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
   response->SetBody(body.c_str(), body.size());
 }
 
+void ServerStatProcessor::index(sails::net::HttpRequest*,
+           sails::net::HttpResponse* response) {
+  response->SetBody("saf index");
+}
+
 Monitor::Monitor(sails::Server* server, int port) {
   thread = NULL;
   status = Monitor::STOPING;
@@ -169,6 +174,8 @@ void Monitor::Start(Monitor* monitor) {
   monitor->processor = new ServerStatProcessor(monitor->server);
   HTTPBIND(monitor->http_server,
            "/stat", monitor->processor, ServerStatProcessor::serverstat);
+  HTTPBIND(monitor->http_server,
+           "/", monitor->processor, ServerStatProcessor::index);
 
   while (!monitor->isTerminate) {
     sleep(1);
@@ -176,3 +183,13 @@ void Monitor::Start(Monitor* monitor) {
 }
 
 }  // namespace sails
+
+
+
+
+
+
+
+
+
+

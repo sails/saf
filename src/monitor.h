@@ -29,6 +29,8 @@ class ServerStatProcessor {
  public:
   void serverstat(sails::net::HttpRequest* request,
              sails::net::HttpResponse* response);
+  void index(sails::net::HttpRequest* request,
+             sails::net::HttpResponse* response);
  private:
   sails::Server* server;
 };
