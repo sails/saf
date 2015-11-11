@@ -77,10 +77,10 @@ set(SAF_SRC
   src/monitor.cc
   src/saf_packet.pb.cc)
 add_executable(saf ${SAF_SRC})
-#连接程序时，它会自动把不是标准的路径加入到rpath中
+# 连接程序时，它会自动把不是标准的路径加入到rpath中
 target_link_libraries(saf protobuf dl jsoncpp sails ctemplate profiler)
 
-#生成safclient库
+# 生成safclient库
 set(SAF_CLIENT_SRC
   src/rpc_client.cc
   src/rpc_channel.cc
