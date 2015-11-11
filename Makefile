@@ -18,8 +18,6 @@ depends:
 	#depends sails
 	cd deps;mkdir temp;cd temp;cmake ../sails;make;cd ../../;
 	cp deps/temp/libsails.a ./lib/
-	if [ "$(UNAME)" = "Linux" ]; then cp deps/temp/libsails.so ./lib; fi
-	if [ "$(UNAME)" = "Darwin" ]; then cp deps/temp/libsails.dylib ./lib; fi
 	rm -r deps/temp
 	#depends ctemplate
 	cd deps/ctemplate; ./configure;make; cd ../../;
