@@ -8,6 +8,7 @@ set(CMAKE_MACOSX_RPATH 1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 # 设置可执行文件路径
+set(THIRD_DEPS_PATH ${CMAKE_SOURCE_DIR}/deps)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/dist)
 # 设置生成库路径
 SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
@@ -41,6 +42,24 @@ if(NOT WIN32)
   set(BoldWhite   "${Esc}[1;37m")
 endif()
 
+#生成sails依赖库(自动被编译到LIBRARY_OUTPUT_PATH目录中)
+add_subdirectory(${THIRD_DEPS_PATH}/sails)
+
+#生成ctemplate依赖库
+if(EXISTS "${LIBRARY_OUTPUT_PATH}/libctemplate.a")
+else()
+  execute_process(
+    COMMAND ./configure
+    COMMAND make
+    WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
+    )
+  execute_process(
+    COMMAND cp .libs/libctemplate.a ${LIBRARY_OUTPUT_PATH}/
+    WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
+    )
+  message(STATUS "${Green} make ${LIBRARY_OUTPUT_PATH}/libctemplate.a${ColourReset}")
+endif()
+
 #生成协议文件
 if(EXISTS "${CMAKE_SOURCE_DIR}/saf_packet.pb.h")
 else()
@@ -48,7 +67,7 @@ else()
     protoc -I=${CMAKE_SOURCE_DIR}/ --cpp_out=${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/saf_packet.proto
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
-  message(STATUS "${Green}Generating ${CMAKE_SOURCE_DIR}/saf_packet.pb.h, saf_packet.pb.cc${ColourReset}")
+  message(STATUS "${Green}Generating ${CMAKE_SOURCE_DIR}/saf_packet.pb.h${ColourReset}")
 endif()
 
 #生成版本文件

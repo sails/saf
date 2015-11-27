@@ -19,7 +19,7 @@ message RequestPacket {
   string funcName = 5;  // 方法
   //google.protobuf.Any detail = 6;  // 消息体，any类型更明确，但是对swig调用方式兼容性不好
   bytes detail = 6;  // 消息体，不要用string，因为具体消息经过编码后不是标准utf-8 string格式
-  int32 timeout = 7;  // 超时时间，-1表示永不，以秒为单位
+  int32 timeout = 7;  // 超时时间，-1表示永不，以秒为单位，因为客户端会设置一个超时，把超时时间告诉服务器，以防无效的请求
   map<string, string> context = 8;  // 业务上下文
   map<string, string> status = 9;  // 框架协议上下文
 }
