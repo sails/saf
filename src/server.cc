@@ -118,13 +118,19 @@ void Server::handle(
   RequestPacket request;
   sails::ResponsePacket response;
   if (request.ParseFromString(recvData.data->reqData)) {
-    base::HandleChain<sails::RequestPacket*,
+    // 检测是否已经超时
+    int spendtime = (sails::base::TimeT::getNowMs()
+                     - recvData.data->startTime) / 1000;
+    if (request.timeout() > 0 && spendtime > request.timeout()) {
+      // 说明在等待队列中阻塞太久了，直接返回
+      response.set_ret(ErrorCode::ERR_TIMEOUT);
+    } else {
+      base::HandleChain<sails::RequestPacket*,
                       sails::ResponsePacket*> handle_chain;
-    HandleRPC proto_decode;
-    handle_chain.add_handle(&proto_decode);
-
-    handle_chain.do_handle(&request, &response);
-
+      HandleRPC proto_decode;
+      handle_chain.add_handle(&proto_decode);
+      handle_chain.do_handle(&request, &response);
+    }
   } else {
     // 出错
     response.set_ret(ErrorCode::ERR_PARSER);
