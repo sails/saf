@@ -58,7 +58,7 @@ add_subdirectory(${THIRD_DEPS_PATH}/sails)
 if(EXISTS "${LIBRARY_OUTPUT_PATH}/libctemplate.a")
 else()
   execute_process(
-    COMAND ./autogen.sh
+    COMMAND ./autogen.sh
     COMMAND ./configure
     WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
     )
