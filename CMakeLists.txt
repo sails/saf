@@ -62,8 +62,13 @@ else()
     COMMAND ./configure
     WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
     )
+  # 不知为何make命令后面不能再有其它命令，不然make不会执行
+  # 所以这里把make和cp分开
   execute_process(
     COMMAND make
+    WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
+    )
+  execute_process(
     COMMAND cp .libs/libctemplate.a ${LIBRARY_OUTPUT_PATH}/
     WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
     )
