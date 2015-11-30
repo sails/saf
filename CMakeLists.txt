@@ -87,8 +87,8 @@ endif()
 
 #生成版本文件
 configure_file( "${CMAKE_SOURCE_DIR}/saf_version.h.in"
-                "${CMAKE_SOURCE_DIR}/saf_version.h"
-                NEWLINE_STYLE UNIX )
+  "${CMAKE_SOURCE_DIR}/saf_version.h"
+  NEWLINE_STYLE UNIX )
 
 
 #set(version_file "${CMAKE_SOURCE_DIR}/saf_version.h")
@@ -104,7 +104,7 @@ configure_file( "${CMAKE_SOURCE_DIR}/saf_version.h.in"
 #  message(STATUS "${Green}Generating ${version_file}${ColourReset}")
 #endif()
 
-  
+
 # 生成saf程序
 set(SAF_SRC
   src/saf.cc
@@ -136,70 +136,74 @@ set_target_properties(safclient_static PROPERTIES OUTPUT_NAME "safclient")
 set_target_properties(safclient PROPERTIES VERSION ${SAF_VERSION} SOVERSION ${SAF_VERSION_MAJOR})
 
 #################################php###################################
+option(PHPLIB "Set to ON to generate an php shared library" ${PHPLIB})
 
-# 生成php swig包裹类
-if(EXISTS "${CMAKE_SOURCE_DIR}/php_safclient.cc")
-else()
+if (PHPLIB)
+  # 生成php swig包裹类
+  if(EXISTS "${CMAKE_SOURCE_DIR}/php_safclient.cc")
+  else()
+    execute_process(COMMAND
+      swig -php -c++  -o ${CMAKE_SOURCE_DIR}/php_safclient.cc ${CMAKE_SOURCE_DIR}/saf_swig.i
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
+    message(STATUS "${Green}Generating php_safclient.cc by saf_swig.i ${ColourReset}")
+  endif()
+
+  # 生成php sdk
+  set(SAF_CLIENT_SRC_PHP
+    ${SAF_CLIENT_SRC}
+    src/php_safclient.cc
+    )
+  # 得到php include路径
   execute_process(COMMAND
-    swig -php -c++  -o ${CMAKE_SOURCE_DIR}/php_safclient.cc ${CMAKE_SOURCE_DIR}/saf_swig.i
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    php-config --includes
+    OUTPUT_VARIABLE php_include
+    OUTPUT_STRIP_TRAILING_WHITESPACE #因为output末尾是回车，应该去掉
     )
-  message(STATUS "${Green}Generating php_safclient.cc by saf_swig.i ${ColourReset}")
-endif()
-
-# 生成php sdk
-set(SAF_CLIENT_SRC_PHP
-  ${SAF_CLIENT_SRC}
-  src/php_safclient.cc
-  )
-# 得到php include路径
-execute_process(COMMAND
-  php-config --includes
-  OUTPUT_VARIABLE php_include
-  OUTPUT_STRIP_TRAILING_WHITESPACE #因为output末尾是回车，应该去掉
-  )
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${php_include}")
-
-SET(php_create_flag " -Wl,-flat_namespace")
-FOREACH(symbol
-    __efree
-    __emalloc
-    __estrdup
-    __estrndup
-    __object_init_ex
-    __object_init
-    __zend_get_parameters_array_ex
-    __zend_list_find
-    __zval_copy_ctor
-    _add_property_zval_ex
-    _alloc_globals
-    _compiler_globals
-    _convert_to_double
-    _convert_to_long
-    __convert_to_string
-    _convert_to_boolean
-    _gc_remove_zval_from_buffer
-    _zend_error
-    _zend_hash_find
-    _zend_register_internal_class_ex
-    _zend_register_list_destructors_ex
-    _zend_register_resource
-    _zend_rsrc_list_get_rsrc_type
-    _zend_wrong_param_count
-    _zval_used_for_init
-    __zend_hash_add_or_update
-    __zval_copy_ctor_func
-    _zend_get_constant
-    _zend_lookup_class
-    _zend_register_long_constant
-    _zval_is_true
-    )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${php_include}")
+  
+  SET(php_create_flag " -Wl,-flat_namespace")
+  FOREACH(symbol
+      __efree
+      __emalloc
+      __estrdup
+      __estrndup
+      __object_init_ex
+      __object_init
+      __zend_get_parameters_array_ex
+      __zend_list_find
+      __zval_copy_ctor
+      _add_property_zval_ex
+      _alloc_globals
+      _compiler_globals
+      _convert_to_double
+      _convert_to_long
+      __convert_to_string
+      _convert_to_boolean
+      _gc_remove_zval_from_buffer
+      _zend_error
+      _zend_hash_find
+      _zend_register_internal_class_ex
+      _zend_register_list_destructors_ex
+      _zend_register_resource
+      _zend_rsrc_list_get_rsrc_type
+      _zend_wrong_param_count
+      _zval_used_for_init
+      __zend_hash_add_or_update
+      __zval_copy_ctor_func
+      _zend_get_constant
+      _zend_lookup_class
+      _zend_register_long_constant
+      _zval_is_true
+      )
     SET(php_create_flag 
       "${php_create_flag},-U,${symbol}")
   ENDFOREACH(symbol)
 
-add_library(php_safclient SHARED ${SAF_CLIENT_SRC_PHP})
-set_target_properties(php_safclient PROPERTIES LINK_FLAGS ${php_create_flag})
-target_link_libraries(php_safclient sails protobuf)
+  add_library(php_safclient SHARED ${SAF_CLIENT_SRC_PHP})
+  set_target_properties(php_safclient PROPERTIES LINK_FLAGS ${php_create_flag})
+  target_link_libraries(php_safclient sails protobuf)
+
+endif()
 
 #################################php###################################
