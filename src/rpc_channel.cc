@@ -142,7 +142,7 @@ std::string RpcChannelImp::RawCallMethod(const std::string& service_name,
   std::unique_lock<std::mutex> locker(request_mutex);
   sn++;
   RequestPacket *packet = new RequestPacket();
-  packet->set_version(VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH);
+  packet->set_version(SAF_VERSION_HEXA);
   if (data_type == 1) {
       packet->set_type(MessageType::RPC_REQUEST);
   } else {
@@ -209,7 +209,7 @@ void RpcChannelImp::async_all(const google::protobuf::MethodDescriptor *method,
   std::unique_lock<std::mutex> locker(request_mutex);
   sn++;
   RequestPacket *packet = new RequestPacket();
-  packet->set_version(VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH);
+  packet->set_version(SAF_VERSION_HEXA);
   packet->set_type(MessageType::RPC_REQUEST);
   packet->set_sn(sn);
   packet->set_servicename(method->service()->name());
@@ -238,7 +238,7 @@ int RpcChannelImp::sync_call(const google::protobuf::MethodDescriptor *method,
   std::unique_lock<std::mutex> locker(request_mutex);
   sn++;
   RequestPacket *packet = new RequestPacket();
-  packet->set_version(VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH);
+  packet->set_version(SAF_VERSION_HEXA);
   packet->set_type(MessageType::RPC_REQUEST);
   packet->set_sn(sn);
   packet->set_servicename(method->service()->name());
@@ -294,8 +294,7 @@ void RpcChannelImp::send_request(RpcChannelImp* channel) {
           continue;
         }
         RequestPacket heartbeat;
-        heartbeat.set_version(
-            VERSION_MAJOR*1000+VERSION_MINOR*100+VERSION_PATCH);
+        heartbeat.set_version(SAF_VERSION_HEXA);
         heartbeat.set_type(MessageType::PING);
         heartbeat.set_sn(0);
         heartbeat.set_servicename("");

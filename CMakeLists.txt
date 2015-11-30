@@ -15,10 +15,19 @@ SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
 
 
-set(VERSION_MAJOR  1)
-set(VERSION_MINOR  0)
-set(VERSION_PATCH  0)
-set(SAF_VERSION    ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+#设置版本号
+SET( SAF_VERSION 1.0.0 )
+#从"1.0.0"解析出_MAJOR, _MINOR, _PATCH版本
+MACRO(saf_parse_version VERSION_TEXT OUPUT_PREFIX)
+  SET(VERSION_REGEX "[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9_]+)?")
+  IF( ${VERSION_TEXT} MATCHES ${VERSION_REGEX} )
+    STRING(REGEX MATCHALL "[0-9]+|-([A-Za-z0-9_]+)" VERSION_PARTS ${VERSION_TEXT})
+    LIST(GET VERSION_PARTS 0 ${OUPUT_PREFIX}_MAJOR)
+    LIST(GET VERSION_PARTS 1 ${OUPUT_PREFIX}_MINOR)
+    LIST(GET VERSION_PARTS 2 ${OUPUT_PREFIX}_PATCH)
+  ENDIF()
+ENDMACRO()
+saf_parse_version( ${SAF_VERSION} SAF_VERSION )
 
 
 #设置打印颜色
@@ -71,18 +80,23 @@ else()
 endif()
 
 #生成版本文件
-set(version_file "${CMAKE_SOURCE_DIR}/saf_version.h")
-if(EXISTS ${version_file})
-else()
-  set(version_string "// This is a generated file.\n\n"
-    "namespace sails {\n"
-    "#define VERSION_MAJOR ${VERSION_MAJOR}\n"
-    "#define VERSION_MINOR ${VERSION_MINOR}\n"
-    "#define VERSION_PATCH ${VERSION_PATCH}\n"
-    "}  // namespace sails\n")
-  file(WRITE ${version_file} ${version_string})
-  message(STATUS "${Green}Generating ${version_file}${ColourReset}")
-endif()
+configure_file( "${CMAKE_SOURCE_DIR}/saf_version.h.in"
+                "${CMAKE_SOURCE_DIR}/saf_version.h"
+                NEWLINE_STYLE UNIX )
+
+
+#set(version_file "${CMAKE_SOURCE_DIR}/saf_version.h")
+#if(EXISTS ${version_file})
+#else()
+#  set(version_string "// This is a generated file.\n\n"
+#    "namespace sails {\n"
+#    "#define VERSION_MAJOR ${VERSION_MAJOR}\n"
+#    "#define VERSION_MINOR ${VERSION_MINOR}\n"
+#    "#define VERSION_PATCH ${VERSION_PATCH}\n"
+#    "}  // namespace sails\n")
+#  file(WRITE ${version_file} ${version_string})
+#  message(STATUS "${Green}Generating ${version_file}${ColourReset}")
+#endif()
 
   
 # 生成saf程序
@@ -113,7 +127,7 @@ target_link_libraries(safclient sails protobuf )
 set_target_properties(safclient PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 set_target_properties(safclient_static PROPERTIES OUTPUT_NAME "safclient")
 # 设置动态库的版本，api兼容版本
-set_target_properties(safclient PROPERTIES VERSION ${SAF_VERSION} SOVERSION ${VERSION_MAJOR})
+set_target_properties(safclient PROPERTIES VERSION ${SAF_VERSION} SOVERSION ${SAF_VERSION_MAJOR})
 
 #################################php###################################
 
