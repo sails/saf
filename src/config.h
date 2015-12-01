@@ -11,12 +11,15 @@
 #ifndef SRC_CONFIG_H_
 #define SRC_CONFIG_H_
 
-#include <json/json.h>
 #include <map>
 #include <vector>
 #include <string>
+#include "sails/base/json.hpp"
+
+using json = nlohmann::json;
 
 namespace sails {
+
 
 // parser configure file
 
@@ -33,7 +36,7 @@ class Config {
   std::vector<std::string> DenyIPList();
 
  private:
-  Json::Value root;
+  json root;
 };
 
 }  // namespace sails

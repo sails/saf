@@ -10,7 +10,7 @@
 #include <sails/net/epoll_server.h>
 #include <sails/net/connector.h>
 #include <signal.h>
-#include <gperftools/profiler.h>
+// #include <gperftools/profiler.h>
 #include "src/monitor.h"
 #include "src/server.h"
 
@@ -24,7 +24,7 @@ void sails_signal_handle(int signo, siginfo_t *, void *) {
   switch (signo) {
     case SIGINT:
       {
-        ProfilerStop();
+        // ProfilerStop();
         server.Stop();
         isRun = false;
 
@@ -57,7 +57,7 @@ void sails_init(int, char **) {
 
 int main(int argc, char *argv[]) {
   sails_init(argc, argv);
-  ProfilerStart("saf.prof");
+  // ProfilerStart("saf.prof");
   while (isRun) {
     sleep(2);
   }
