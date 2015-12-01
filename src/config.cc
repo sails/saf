@@ -37,7 +37,6 @@ Config::Config() {
   ifs.read(begin, length);
   ifs.close();
  
-  std::cout << str << "\n";
   root = json::parse(str);
 }
 
