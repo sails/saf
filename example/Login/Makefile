@@ -24,7 +24,7 @@ logout_client: logout_client.o login.pb.o
 
 servicecc=register.cc login.pb.cc login_service.cc login_config.cc
 login_module: $(servicecc)
-	g++ $(CFLAGS) -shared $(INCLUDE) -Wl,-rpath,$(LIBPATH) -fPIC -o $(TARGET) $(servicecc) $(LINKPATH) -lsails -lprotobuf -ljsoncpp  -lcurl
+	g++ $(CFLAGS) -shared $(INCLUDE) -Wl,-rpath,$(LIBPATH) -fPIC -o $(TARGET) $(servicecc) $(LINKPATH) -lsails -lprotobuf -lcurl
 	mv $(TARGET) $(LIBPATH)/$(TARGET)
 clean:
 	rm *.o *.d

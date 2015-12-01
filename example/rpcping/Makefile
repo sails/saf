@@ -2,10 +2,10 @@ SAILS			= ../../deps/sails
 SRC			= ../../src
 CFLAGS			= -std=c++11 -O0 -g
 INCLUDE			= -I../../deps/ -I$(SRC) -I$(SAILS) -I/usr/local/include
-LIBPATH			= -L../../lib -L/usr/local/lib/
-
+LIBPATH			= ../../lib
+LINKPATH		= -L$(LIBPATH) -L/usr/local/lib
 client: client.o ping.pb.o
-	g++ $(CFLAGS) -Wl,-rpath,../../lib -L$(LIBPATH) client.o ping.pb.o -o client -pthread -lsafclient -lprotobuf
+	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) $(LINKPATH) client.o ping.pb.o -o client -pthread -lsafclient -lprotobuf
 
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
@@ -21,7 +21,7 @@ endif
 
 servicecc=register.cc ping.pb.cc
 rpcping_module: $(servicecc)
-	g++ $(CFLAGS) -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) -L$(LIBPATH) -lsails -lprotobuf -ljsoncpp  -lcurl
+	g++ $(CFLAGS) -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) $(LINKPATH) -lsails -lprotobuf -ljsoncpp  -lcurl
 	mv $(TARGET) $(LIBPATH)/$(TARGET)
 
 clean:

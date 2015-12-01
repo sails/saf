@@ -16,15 +16,16 @@
 
 #include <map>
 #include <string>
-#include "json/json.h"
+#include "sails/base/json.hpp"
+
+using json = nlohmann::json;
 
 namespace sails {
-
 
 class RankConfig {
  public:
   RankConfig();
-
+  
   std::string GetRedisServerIP();
   int GetRedisServerPort();
 
@@ -34,7 +35,7 @@ class RankConfig {
   int GetTieScore();
 
  private:
-  Json::Value root;
+  json root;
 };
 
 

@@ -6,7 +6,7 @@ LIBPATH			= ../../lib
 LINKPATH		= -L$(LIBPATH) -L/usr/local/lib
 
 client: client.o addressbook.pb.o
-	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) $(LINKPATH) client.o addressbook.pb.o -o client -pthread -lsafclient.1.0.0 -lsails  -lprotobuf
+	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) $(LINKPATH) client.o addressbook.pb.o -o client -pthread -lsafclient -lsails  -lprotobuf
 
 %.o: %.cc
 	g++ $(CFLAGS) $(INCLUDE) -c -o $@ $<
