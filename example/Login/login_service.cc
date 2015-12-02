@@ -154,7 +154,7 @@ bool login_check(const LoginRequest *request) {
 std::string get_session() {
   // gen session
   char temp_str[100] = {'\0'};
-  snprintf(temp_str, sizeof(temp_str), "%llu", sails::base::GetUID());
+  snprintf(temp_str, sizeof(temp_str), "%" PRIu64 "", sails::base::GetUID());
   std::string session = crypto::MD5(temp_str).toString();
 
   return session;
