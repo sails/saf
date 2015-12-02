@@ -3,7 +3,7 @@
 #include <sails/base/time_t.h>
 #include <sails/crypto/md5.h>
 #include <sails/base/string.h>
-#include <json/json.h>
+#include <sails/base/Json.hpp>
 #include <sails/log/logging.h>
 #include <string>
 #include "login_config.h"
@@ -140,13 +140,12 @@ bool login_check(const LoginRequest *request) {
   std::string result;
   if ( post_message(url.c_str(), param, result) ) {
     // parser json data
-    Json::Reader reader;
-    Json::Value root;
-    if (reader.parse(result, root)) {
-      if ( !root["status"].empty() ) {
-        if (root["status"].asInt() == 1) {
-          return true;
-        }
+    json root;
+    root = json::parse(result);
+    if ( !root["status"].empty() ) {
+      int status = root["status"];
+      if (status == 1) {
+        return true;
       }
     }
   }
