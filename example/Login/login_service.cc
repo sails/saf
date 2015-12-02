@@ -3,7 +3,7 @@
 #include <sails/base/time_t.h>
 #include <sails/crypto/md5.h>
 #include <sails/base/string.h>
-#include <sails/base/Json.hpp>
+#include <sails/base/json.hpp>
 #include <sails/log/logging.h>
 #include <string>
 #include "login_config.h"
@@ -140,8 +140,7 @@ bool login_check(const LoginRequest *request) {
   std::string result;
   if ( post_message(url.c_str(), param, result) ) {
     // parser json data
-    json root;
-    root = json::parse(result);
+    json root = json::parse(result);
     if ( !root["status"].empty() ) {
       int status = root["status"];
       if (status == 1) {
@@ -170,24 +169,23 @@ bool get_room_info(int roomid, RoomInfo *info) {
 
   if ( post_message(url.c_str(), param, result) ) {
     loginLog.debug("get room infor:%s", result.c_str());
-    Json::Reader reader;
-    Json::Value root;
-    if (reader.parse(result, root)) {
-      int status = root["status"].asInt();
+    json root = json::parse(result);
+    if ( !root["status"].empty() ) {
+      int status = root["status"];
       if (status == 0) {  // call right
-
         if (!root["message"]["ip"].empty() &&
             !root["message"]["port"].empty() &&
             !root["message"]["usercount"].empty() ) {
-          std::string ip = root["message"]["ip"].asString();
+          std::string ip = root["message"]["ip"];
           strncpy(info->ip, ip.c_str(), ip.length());
           loginLog.debug("ip:%s", ip.c_str());
-
-          int port = atoi(root["message"]["port"].asString().c_str());
+          std::string portstr = root["message"]["port"];
+          int port = atoi(portstr.c_str());
           info->port = port;
           loginLog.debug("port:%d", port);
 
-          int usercount = atoi(root["message"]["usercount"].asString().c_str());
+          std::string usercountstr = root["message"]["usercount"];
+          int usercount = atoi(usercountstr.c_str());
           info->usercount = usercount;
           loginLog.debug("usercount:%d", usercount);
 
@@ -209,10 +207,9 @@ bool report_session(std::string session, std::string user, RoomInfo* room) {
 
   if (post_message(url.c_str(), param, result)) {
     loginLog.debug("report session result:%s", result.c_str());
-    Json::Reader reader;
-    Json::Value root;
-    if (reader.parse(result, root)) {
-      int status = root["status"].asInt();
+    json root = json::parse(result);
+    if ( !root["status"].empty() ) {
+      int status = root["status"];
       if (status == 0) {  // call right
         return true;
       }
@@ -229,10 +226,9 @@ bool delete_session(std::string session) {
 
   if (post_message(url.c_str(), param, result)) {
     loginLog.debug("delete session result:%s", result.c_str());
-    Json::Reader reader;
-    Json::Value root;
-    if (reader.parse(result, root)) {
-      int status = root["status"].asInt();
+    json root = json::parse(result);
+    if ( !root["status"].empty() ) {
+      int status = root["status"];
       if (status == 0) {  // call right
         return true;
       }
