@@ -134,6 +134,11 @@ set_target_properties(safclient PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 set_target_properties(safclient_static PROPERTIES OUTPUT_NAME "safclient")
 # 设置动态库的版本，api兼容版本
 set_target_properties(safclient PROPERTIES VERSION ${SAF_VERSION} SOVERSION ${SAF_VERSION_MAJOR})
+# 这里为了使用者方便，生成一个联合静态库
+add_custom_target(safclient_static_combined ALL
+  COMMAND ${CMAKE_AR} rc libsafclient_combined.a libsafclient.a libsails.a
+  WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
+  ) 
 
 #################################php###################################
 option(PHPLIB "Set to ON to generate an php shared library" ${PHPLIB})
