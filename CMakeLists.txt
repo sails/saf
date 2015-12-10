@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.8)
-set(CMAKE_VERBOSE_MAKEFILE on)
+#set(CMAKE_VERBOSE_MAKEFILE on)
 
 project (saf)
 include_directories(/usr/local/include ./ src deps deps/ctemplate/src)
@@ -160,12 +160,14 @@ set_target_properties(safclient_static PROPERTIES OUTPUT_NAME "safclient")
 # 设置动态库的版本，api兼容版本
 set_target_properties(safclient PROPERTIES VERSION ${SAF_VERSION} SOVERSION ${SAF_VERSION_MAJOR})
 # 这里为了使用者方便，生成一个联合静态库
+
 add_custom_target(safclient_static_combined ALL
-  COMMAND rm libsafclient_combined.a
+  COMMAND find ./ -name "libsafclient_combined.a" | xargs rm -f
   COMMAND ${CMAKE_AR} x libsafclient.a
   COMMAND ${CMAKE_AR} x  libsails.a
   COMMAND ${CMAKE_AR} rc libsafclient_combined.a *.o
   COMMAND rm *.o
+  DEPENDS safclient
   WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
   )
 
