@@ -79,7 +79,14 @@ if(EXISTS "${LIBRARY_OUTPUT_PATH}/libctemplate.a")
 else()
   if(EXISTS ${THIRD_DEPS_PATH}/ctemplate)
     execute_process(
-      COMMAND ./autogen.sh & ./configure
+      COMMAND ./autogen.sh
+      WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
+      )
+    execute_process(
+      COMMAND ./configure
+      WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
+      )
+    execute_process(
       COMMAND make
       WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
       )
