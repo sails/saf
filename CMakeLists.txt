@@ -167,7 +167,7 @@ add_custom_target(safclient_static_combined ALL
   COMMAND ${CMAKE_AR} x  libsails.a
   COMMAND ${CMAKE_AR} rc libsafclient_combined.a *.o
   COMMAND rm *.o
-  DEPENDS safclient
+  DEPENDS safclient_static
   WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
   )
 
