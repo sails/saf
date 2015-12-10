@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8.8)
+set(CMAKE_VERBOSE_MAKEFILE on)
 
 project (saf)
 include_directories(/usr/local/include ./ src deps deps/ctemplate/src)
@@ -51,28 +52,45 @@ if(NOT WIN32)
   set(BoldWhite   "${Esc}[1;37m")
 endif()
 
-#生成sails依赖库(自动被编译到LIBRARY_OUTPUT_PATH目录中)
-add_subdirectory(${THIRD_DEPS_PATH}/sails)
-
+#生成sails依赖库
+if(EXISTS ${LIBRARY_OUTPUT_PATH}/libsails.a)
+else()
+  if(EXISTS ${THIRD_DEPS_PATH}/sails)
+    execute_process(COMMAND mkdir sails
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      )
+    execute_process(COMMAND cmake ${THIRD_DEPS_PATH}/sails
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/sails/
+      )
+    execute_process(COMMAND make
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/sails/
+      )
+    execute_process(
+      COMMAND cp libsails.a ${LIBRARY_OUTPUT_PATH}/
+      COMMAND rm -r ../sails
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/sails/
+      )
+  else()
+    message(STATUS "${Red} third library not exits in deps/sails, you may need execute git clone by add --recursive${ColourReset}")
+  endif()
+endif()
 #生成ctemplate依赖库
 if(EXISTS "${LIBRARY_OUTPUT_PATH}/libctemplate.a")
 else()
-  execute_process(
-    COMMAND ./autogen.sh
-    COMMAND ./configure
-    WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
-    )
-  # 不知为何make命令后面不能再有其它命令，不然make不会执行
-  # 所以这里把make和cp分开
-  execute_process(
-    COMMAND make
-    WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
-    )
-  execute_process(
-    COMMAND cp .libs/libctemplate.a ${LIBRARY_OUTPUT_PATH}/
-    WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
-    )
-  message(STATUS "${Green} make ${LIBRARY_OUTPUT_PATH}/libctemplate.a${ColourReset}")
+  if(EXISTS ${THIRD_DEPS_PATH}/ctemplate)
+    execute_process(
+      COMMAND ./autogen.sh & ./configure
+      COMMAND make
+      WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
+      )
+    execute_process(
+      COMMAND cp .libs/libctemplate.a ${LIBRARY_OUTPUT_PATH}/
+      WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
+      )
+    message(STATUS "${Green} make ${LIBRARY_OUTPUT_PATH}/libctemplate.a${ColourReset}")
+  else()
+    message(STATUS "${Red} third library not exits in deps/ctemplate, you may need execute git clone by add --recursive${ColourReset}")
+  endif()
 endif()
 
 #生成协议文件
@@ -138,7 +156,7 @@ set_target_properties(safclient PROPERTIES VERSION ${SAF_VERSION} SOVERSION ${SA
 add_custom_target(safclient_static_combined ALL
   COMMAND ${CMAKE_AR} rc libsafclient_combined.a libsafclient.a libsails.a
   WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
-  ) 
+  )
 
 #################################php###################################
 option(PHPLIB "Set to ON to generate an php shared library" ${PHPLIB})
