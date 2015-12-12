@@ -52,7 +52,7 @@ if(NOT WIN32)
   set(BoldWhite   "${Esc}[1;37m")
 endif()
 
-#生成sails依赖库
+#生成sails依赖库，它是后面所有target都依赖的，所以在生成makefile之前就编译好
 if(EXISTS ${LIBRARY_OUTPUT_PATH}/libsails.a)
 else()
   if(EXISTS ${THIRD_DEPS_PATH}/sails)
@@ -74,31 +74,7 @@ else()
     message(STATUS "${Red} third library not exits in deps/sails, you may need execute git clone by add --recursive${ColourReset}")
   endif()
 endif()
-#生成ctemplate依赖库
-if(EXISTS "${LIBRARY_OUTPUT_PATH}/libctemplate.a")
-else()
-  if(EXISTS ${THIRD_DEPS_PATH}/ctemplate)
-    execute_process(
-      COMMAND ./autogen.sh
-      WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
-      )
-    execute_process(
-      COMMAND ./configure
-      WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
-      )
-    execute_process(
-      COMMAND make
-      WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
-      )
-    execute_process(
-      COMMAND cp .libs/libctemplate.a ${LIBRARY_OUTPUT_PATH}/
-      WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
-      )
-    message(STATUS "${Green} make ${LIBRARY_OUTPUT_PATH}/libctemplate.a${ColourReset}")
-  else()
-    message(STATUS "${Red} third library not exits in deps/ctemplate, you may need execute git clone by add --recursive${ColourReset}")
-  endif()
-endif()
+
 
 #生成协议文件
 if(EXISTS "${CMAKE_SOURCE_DIR}/saf_packet.pb.h")
@@ -115,21 +91,6 @@ configure_file( "${CMAKE_SOURCE_DIR}/saf_version.h.in"
   "${CMAKE_SOURCE_DIR}/saf_version.h"
   NEWLINE_STYLE UNIX )
 
-
-#set(version_file "${CMAKE_SOURCE_DIR}/saf_version.h")
-#if(EXISTS ${version_file})
-#else()
-#  set(version_string "// This is a generated file.\n\n"
-#    "namespace sails {\n"
-#    "#define VERSION_MAJOR ${VERSION_MAJOR}\n"
-#    "#define VERSION_MINOR ${VERSION_MINOR}\n"
-#    "#define VERSION_PATCH ${VERSION_PATCH}\n"
-#    "}  // namespace sails\n")
-#  file(WRITE ${version_file} ${version_string})
-#  message(STATUS "${Green}Generating ${version_file}${ColourReset}")
-#endif()
-
-
 # 生成saf程序
 set(SAF_SRC
   src/saf.cc
@@ -143,6 +104,21 @@ set(SAF_SRC
 add_executable(saf ${SAF_SRC})
 # 连接程序时，它会自动把不是标准的路径加入到rpath中
 target_link_libraries(saf protobuf dl sails ctemplate pthread)
+
+
+#生成ctemplate依赖库，它只在saf中被需要，所以延迟编译
+if(EXISTS "${LIBRARY_OUTPUT_PATH}/libctemplate.a")
+else()
+  add_custom_target(ctemplate
+    COMMAND ./autogen.sh
+    COMMAND ./configure
+    COMMAND make
+    COMMAND cp .libs/libctemplate.a ${LIBRARY_OUTPUT_PATH}/
+    WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
+    )
+  add_dependencies(saf ctemplate)
+endif()
+
 
 # 生成safclient库
 set(SAF_CLIENT_SRC
