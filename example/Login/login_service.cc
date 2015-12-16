@@ -1,4 +1,5 @@
 #include "login_service.h"
+#include <inttypes.h>
 #include <curl/curl.h>
 #include <sails/base/time_t.h>
 #include <sails/crypto/md5.h>

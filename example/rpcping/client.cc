@@ -67,7 +67,9 @@ void async_test() {
   for (int i = 0; i < async_times; i++) {
     PingMessage* response = new PingMessage();
     responseList.push_back(response);
-    Closure* callback = NewCallback(&DoneCallback, response);
+    // 在以前的NewCallback是没有放到internal空间中，但是感觉以后可能会改变成另一个方法
+    // 因为一般不应该直接使用internal的东西
+    Closure* callback = internal::NewCallback(&DoneCallback, response);
     stub.ping(client.Controller(), &request, response, callback);
   }
   
