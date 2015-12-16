@@ -22,7 +22,7 @@ endif
 
 servicecc=register.cc rank_service.cc rank_config.cc rank.pb.cc
 rank_module: $(servicecc)
-	g++ $(CFLAGS) -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) $(LINKPATH) -lsails -lprotobuf -ljsoncpp  -lcurl -lhiredis
+	g++ $(CFLAGS) -shared $(INCLUDE) -fPIC -o $(TARGET) $(servicecc) $(LINKPATH) -lsails -lprotobuf -lcurl -lhiredis
 	mv $(TARGET) $(LIBPATH)/$(TARGET)
 
 clean:
