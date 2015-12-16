@@ -1,6 +1,0 @@
-[submodule "ctemplate"]
-	path = ctemplate
-	url = https://github.com/svn2github/ctemplate.git
-[submodule "sails"]
-	path = sails
-	url = https://github.com/sails/sails.git
