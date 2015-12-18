@@ -52,30 +52,6 @@ if(NOT WIN32)
   set(BoldWhite   "${Esc}[1;37m")
 endif()
 
-#生成sails依赖库，它是后面所有target都依赖的，所以在生成makefile之前就编译好
-if(EXISTS ${LIBRARY_OUTPUT_PATH}/libsails.a)
-else()
-  if(EXISTS ${THIRD_DEPS_PATH}/sails)
-    execute_process(COMMAND mkdir sails
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      )
-    execute_process(COMMAND cmake ${THIRD_DEPS_PATH}/sails
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/sails/
-      )
-    execute_process(COMMAND make
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/sails/
-      )
-    execute_process(
-      COMMAND cp libsails.a ${LIBRARY_OUTPUT_PATH}/
-      COMMAND rm -r ../sails
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/sails/
-      )
-  else()
-    message(STATUS "${Red} third library not exits in deps/sails, you may need execute git clone by add --recursive${ColourReset}")
-  endif()
-endif()
-
-
 #生成协议文件
 if(EXISTS "${CMAKE_SOURCE_DIR}/saf_packet.pb.h")
 else()
@@ -91,6 +67,28 @@ configure_file( "${CMAKE_SOURCE_DIR}/saf_version.h.in"
   "${CMAKE_SOURCE_DIR}/saf_version.h"
   NEWLINE_STYLE UNIX )
 
+
+include (ExternalProject)
+# 生成sails版本库，ExternalProject默认是使用cmake进行编译
+ExternalProject_Add(sails_proj
+  PREFIX sails
+  SOURCE_DIR ${THIRD_DEPS_PATH}/sails
+  INSTALL_COMMAND cp libsails.a ${LIBRARY_OUTPUT_PATH}/
+  )
+
+# 生成ctemplate库
+ExternalProject_Add(ctemplate_proj
+  PREFIX ctemplate
+  SOURCE_DIR ${THIRD_DEPS_PATH}/ctemplate
+  # BINARY_DIR为执行命令的目录，BUILD_IN_SOURCE为1时BINARY_DIR与SOURCE_DIR相同
+  # BUILD_IN_SOURCE 1
+  BINARY_DIR ${THIRD_DEPS_PATH}/ctemplate
+  UPDATE_COMMAND ./autogen.sh
+  CONFIGURE_COMMAND ./configure
+  BUILD_COMMAND make
+  INSTALL_COMMAND cp .libs/libctemplate.a ${LIBRARY_OUTPUT_PATH}/
+  )
+
 # 生成saf程序
 set(SAF_SRC
   src/saf.cc
@@ -104,20 +102,9 @@ set(SAF_SRC
 add_executable(saf ${SAF_SRC})
 # 连接程序时，它会自动把不是标准的路径加入到rpath中
 target_link_libraries(saf protobuf dl sails ctemplate pthread)
+add_dependencies(saf sails_proj ctemplate_proj)
 
 
-#生成ctemplate依赖库，它只在saf中被需要，所以延迟编译
-if(EXISTS "${LIBRARY_OUTPUT_PATH}/libctemplate.a")
-else()
-  add_custom_target(ctemplate
-    COMMAND ./autogen.sh
-    COMMAND ./configure
-    COMMAND make
-    COMMAND cp .libs/libctemplate.a ${LIBRARY_OUTPUT_PATH}/
-    WORKING_DIRECTORY ${THIRD_DEPS_PATH}/ctemplate/
-    )
-  add_dependencies(saf ctemplate)
-endif()
 
 
 # 生成safclient库
@@ -137,13 +124,14 @@ set_target_properties(safclient_static PROPERTIES OUTPUT_NAME "safclient")
 set_target_properties(safclient PROPERTIES VERSION ${SAF_VERSION} SOVERSION ${SAF_VERSION_MAJOR})
 # 这里为了使用者方便，生成一个联合静态库
 
+
 add_custom_target(safclient_static_combined ALL
   COMMAND find ./ -name "libsafclient_combined.a" | xargs rm -f
   COMMAND ${CMAKE_AR} x libsafclient.a
   COMMAND ${CMAKE_AR} x  libsails.a
   COMMAND ${CMAKE_AR} rc libsafclient_combined.a *.o
   COMMAND rm *.o
-  DEPENDS safclient_static
+  DEPENDS safclient_static sails_proj
   WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
   )
 
