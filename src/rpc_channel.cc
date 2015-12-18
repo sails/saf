@@ -355,7 +355,7 @@ void RpcChannelImp::recv_response(RpcChannelImp* channel) {
               continueParse = true;
             }
           } else {
-            char msg[50];
+            char msg[50] = {'\0'};
             snprintf(msg, sizeof(msg), "get a response for error_code %d",
                      resp->ret());
             perror(msg);

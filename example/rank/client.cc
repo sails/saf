@@ -91,6 +91,7 @@ int main() {
   addRequest.set_roomid(10);
   addRequest.set_roomtype(10);
   addRequest.set_key("safrankservicecontroller");
+  addRequest.set_fightid(1);
   char time_str[100] = {'\0'};
   sails::base::TimeT::time_str(time_str, 100);
   addRequest.set_overtime(time_str);
