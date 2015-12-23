@@ -67,13 +67,14 @@ configure_file( "${CMAKE_SOURCE_DIR}/saf_version.h.in"
   "${CMAKE_SOURCE_DIR}/saf_version.h"
   NEWLINE_STYLE UNIX )
 
-
 include (ExternalProject)
 # 生成sails版本库，ExternalProject默认是使用cmake进行编译
 ExternalProject_Add(sails_proj
   PREFIX sails
   SOURCE_DIR ${THIRD_DEPS_PATH}/sails
-  INSTALL_COMMAND cp libsails.a ${LIBRARY_OUTPUT_PATH}/
+  #CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release
+  # 因为可能会编译到debug,release目录下
+  INSTALL_COMMAND find . -name libsails.a | xargs -I {} cp {} ${LIBRARY_OUTPUT_PATH}/
   )
 
 # 生成ctemplate库
@@ -122,18 +123,33 @@ set_target_properties(safclient PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 set_target_properties(safclient_static PROPERTIES OUTPUT_NAME "safclient")
 # 设置动态库的版本，api兼容版本
 set_target_properties(safclient PROPERTIES VERSION ${SAF_VERSION} SOVERSION ${SAF_VERSION_MAJOR})
+
 # 这里为了使用者方便，生成一个联合静态库
+if(CMAKE_GENERATOR STREQUAL Xcode)
+  add_custom_target(safclient_static_combined ALL
+    COMMAND find ./ -name "libsafclient_combined.a" | xargs rm -f
+    # 因为xcode会编译到debug,release目录中
+    COMMAND find ./ -name "libsafclient.a" | xargs -I {} cp {} ./
+    COMMAND ${CMAKE_AR} x libsafclient.a
+    COMMAND ${CMAKE_AR} x  libsails.a
+    COMMAND ${CMAKE_AR} rc libsafclient_combined.a *.o
+    COMMAND rm *.o
+    COMMAND rm libsafclient.a
+    DEPENDS safclient_static sails_proj
+    WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
+    )
+else()
+  add_custom_target(safclient_static_combined ALL
+    COMMAND find ./ -name "libsafclient_combined.a" | xargs rm -f
+    COMMAND ${CMAKE_AR} x libsafclient.a
+    COMMAND ${CMAKE_AR} x  libsails.a
+    COMMAND ${CMAKE_AR} rc libsafclient_combined.a *.o
+    COMMAND rm *.o
+    DEPENDS safclient_static sails_proj
+    WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
+    )
+endif()
 
-
-add_custom_target(safclient_static_combined ALL
-  COMMAND find ./ -name "libsafclient_combined.a" | xargs rm -f
-  COMMAND ${CMAKE_AR} x libsafclient.a
-  COMMAND ${CMAKE_AR} x  libsails.a
-  COMMAND ${CMAKE_AR} rc libsafclient_combined.a *.o
-  COMMAND rm *.o
-  DEPENDS safclient_static sails_proj
-  WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
-  )
 
 #################################php###################################
 option(PHPLIB "Set to ON to generate an php shared library" ${PHPLIB})
