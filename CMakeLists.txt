@@ -8,11 +8,20 @@ link_directories(lib /usr/local/lib/)
 set(CMAKE_MACOSX_RPATH 1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-# 设置可执行文件路径
+
 set(THIRD_DEPS_PATH ${CMAKE_SOURCE_DIR}/deps)
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/dist)
+# 设置可执行文件路径
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/dist)
 # 设置生成库路径
-SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+# 对于多配置的工程，也统一指定，方便在生成联合库时明确位置进行解压
+foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+  string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+  set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_SOURCE_DIR}/lib )
+  set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_SOURCE_DIR}/lib )
+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+# 重新定义src目录
 set(CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
 
 
@@ -74,7 +83,7 @@ ExternalProject_Add(sails_proj
   SOURCE_DIR ${THIRD_DEPS_PATH}/sails
   #CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release
   # 因为可能会编译到debug,release目录下
-  INSTALL_COMMAND find . -name libsails.a | xargs -I {} cp {} ${LIBRARY_OUTPUT_PATH}/
+  INSTALL_COMMAND find . -name libsails.a | xargs -I {} cp {} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/
   )
 
 # 生成ctemplate库
@@ -87,7 +96,7 @@ ExternalProject_Add(ctemplate_proj
   UPDATE_COMMAND ./autogen.sh
   CONFIGURE_COMMAND ./configure
   BUILD_COMMAND make
-  INSTALL_COMMAND cp .libs/libctemplate.a ${LIBRARY_OUTPUT_PATH}/
+  INSTALL_COMMAND cp .libs/libctemplate.a ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/
   )
 
 # 生成saf程序
@@ -125,30 +134,15 @@ set_target_properties(safclient_static PROPERTIES OUTPUT_NAME "safclient")
 set_target_properties(safclient PROPERTIES VERSION ${SAF_VERSION} SOVERSION ${SAF_VERSION_MAJOR})
 
 # 这里为了使用者方便，生成一个联合静态库
-if(CMAKE_GENERATOR STREQUAL Xcode)
-  add_custom_target(safclient_static_combined ALL
-    COMMAND find ./ -name "libsafclient_combined.a" | xargs rm -f
-    # 因为xcode会编译到debug,release目录中
-    COMMAND find ./ -name "libsafclient.a" | xargs -I {} cp {} ./
-    COMMAND ${CMAKE_AR} x libsafclient.a
-    COMMAND ${CMAKE_AR} x  libsails.a
-    COMMAND ${CMAKE_AR} rc libsafclient_combined.a *.o
-    COMMAND rm *.o
-    COMMAND rm libsafclient.a
-    DEPENDS safclient_static sails_proj
-    WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
-    )
-else()
-  add_custom_target(safclient_static_combined ALL
-    COMMAND find ./ -name "libsafclient_combined.a" | xargs rm -f
-    COMMAND ${CMAKE_AR} x libsafclient.a
-    COMMAND ${CMAKE_AR} x  libsails.a
-    COMMAND ${CMAKE_AR} rc libsafclient_combined.a *.o
-    COMMAND rm *.o
-    DEPENDS safclient_static sails_proj
-    WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
-    )
-endif()
+add_custom_target(safclient_static_combined ALL
+  COMMAND find ./ -name "libsafclient_combined.a" | xargs rm -f
+  COMMAND ${CMAKE_AR} x libsafclient.a
+  COMMAND ${CMAKE_AR} x  libsails.a
+  COMMAND ${CMAKE_AR} rc libsafclient_combined.a *.o
+  COMMAND rm *.o
+  DEPENDS safclient_static sails_proj
+  WORKING_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+  )
 
 
 #################################php###################################
