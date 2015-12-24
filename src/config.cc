@@ -29,14 +29,14 @@ Config::Config() {
   ifs.seekg(0, ifs.end);
   int length = ifs.tellg();
   ifs.seekg(0, ifs.beg);
- 
+
   std::string str;
-  str.resize(length, ' '); // reserve space
+  str.resize(length, ' ');  // reserve space
   char* begin = &*str.begin();
-  
+
   ifs.read(begin, length);
   ifs.close();
- 
+
   root = json::parse(str);
 }
 
