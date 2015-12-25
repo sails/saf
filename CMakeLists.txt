@@ -111,9 +111,13 @@ set(SAF_SRC
   src/saf_packet.pb.cc)
 add_executable(saf ${SAF_SRC})
 # 连接程序时，它会自动把不是标准的路径加入到rpath中
-target_link_libraries(saf protobuf dl sails ctemplate pthread)
+if(UNIX AND NOT APPLE)
+  target_link_libraries(saf protobuf rt dl sails ctemplate pthread)
+else()
+  target_link_libraries(saf protobuf dl sails ctemplate pthread)
+endif()
 add_dependencies(saf sails_proj ctemplate_proj)
-
+target_link_libraries(saf protobuf dl sails ctemplate pthread)
 
 
 
