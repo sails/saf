@@ -1,4 +1,18 @@
+// Copyright (C) 2015 sails Authors.
+// All rights reserved.
+//
+// Official git repository and contact information can be found at
+// https://github.com/sails/sails and http://www.sailsxu.com/.
+//
+// Filename: login_service.cc
+//
+// Author: sailsxu <sailsxu@gmail.com>
+// Created: 2015-12-25 14:48:09
+
+
+
 #include "login_service.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <curl/curl.h>
 #include <sails/base/time_t.h>
