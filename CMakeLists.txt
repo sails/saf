@@ -127,6 +127,7 @@ set(SAF_CLIENT_SRC
 add_library(safclient_static STATIC ${SAF_CLIENT_SRC})
 add_library(safclient SHARED ${SAF_CLIENT_SRC})
 target_link_libraries(safclient sails protobuf )
+add_dependencies(safclient sails_proj)
 # 为了防止OUTPUT_NAME设置新的target时清除已经存在的同名target
 set_target_properties(safclient PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 set_target_properties(safclient_static PROPERTIES OUTPUT_NAME "safclient")
