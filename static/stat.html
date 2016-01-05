@@ -5,21 +5,21 @@
   <body>
     <div class="process_info">
       <label>Basic Info</label>
-      <div>pid: {{PID}}</div>
-      <div>listen port: {{PORT}}</div>
-      <div>cpu: {{CPU}}</div>
-      <div>vm_size: {{VMSIZE}} KB</div>
-      <div>mem_size: {{MEMSIZE}} KB</div>
+      <div>pid: {$PID}</div>
+      <div>listen port: {$PORT}</div>
+      <div>cpu: {$CPU}</div>
+      <div>vm_size: {$VMSIZE} KB</div>
+      <div>mem_size: {$MEMSIZE} KB</div>
     </div>
 
-    {{#ServerRecvSize}}
+    {% if run_mode == "1" %}
     <div class="process_info">
-      <label>Server Recv Queue Size:{{recv_queue_size}}</label>
+      <label>Server Recv Queue Size:{$recv_queue_size}</label>
     </div>
-    {{/ServerRecvSize}}
+    {% endif %}
     
     <div class="process_info">
-      <label>Net Thread Info(num:{{NetThreadNum}})</label>
+      <label>Net Thread Info(num:{$NetThreadNum})</label>
       <table class="dataintable">
 	<tr>
           <th>no</th>
@@ -30,48 +30,48 @@
 	  <th>send_queue_capacity</th>
 	  <th>send_queue_size</th>
 	</tr>
-	{{#NetThreadSection}}
+        {% for netinfo in net_threads %}
 	<tr>
-          <td>{{NetThread_NO}}</td>
-	  <td>{{NetThread_status}}</td>
-	  <td>{{NetThread_connector_num}}</td>
-	  <td>{{NetThread_accept_times}}</td>
-          <td>{{NetThread_reject_times}}</td>
-	  <td>{{NetThread_send_queue_capacity}}</td>
-	  <td>{{NetThread_send_queue_size}}</td>
+          <td>{$netinfo.NetThread_NO}</td>
+	  <td>{$netinfo.NetThread_status}</td>
+	  <td>{$netinfo.NetThread_connector_num}</td>
+	  <td>{$netinfo.NetThread_accept_times}</td>
+          <td>{$netinfo.NetThread_reject_times}</td>
+	  <td>{$netinfo.NetThread_send_queue_capacity}</td>
+	  <td>{$netinfo.NetThread_send_queue_size}</td>
 	</tr>
-	{{/NetThreadSection}}
+        {% endfor %}
       </table>
     </div>
     
     <div class="process_info">
-      <label>Handle Thread Info(num:{{HandleThreadNum}})</label>
+      <label>Handle Thread Info(num:{$HandleThreadNum})</label>
       <table class="dataintable">
 	<tr>
           <th>no</th>
 	  <th>status</th>
 	  <th>handle_times</th>
-          {{#HandleRecvSize}}
+          {% if run_mode == "2"%}
 	  <th>handle_queue_capacity</th>
 	  <th>handle_queue_size</th>
-          {{/HandleRecvSize}}
+          {% endif %}
 	</tr>
-        {{#HandleThreadSection}}
+        {% for handleinfo in handle_threads %}
 	<tr>
-          <td>{{HandleThread_NO}}</td>
-	  <td>{{HandleThread_status}}</td>
-	  <td>{{HandleThread_handle_times}}</td>
-          {{#HandleRecvSize}}
-	  <td>{{HandleThread_handle_queue_capacity}}</td>
-	  <td>{{HandleThread_handle_queue_size}}</td>
-          {{/HandleRecvSize}}
+          <td>{$handleinfo.HandleThread_NO}</td>
+	  <td>{$handleinfo.HandleThread_status}</td>
+	  <td>{$handleinfo.HandleThread_handle_times}</td>
+          {% if run_mode == "2" %}
+	  <td>{$handleinfo.HandleThread_handle_queue_capacity}</td>
+	  <td>{$handleinfo.HandleThread_handle_queue_size}</td>
+          {% endif %}
 	</tr>
-	{{/HandleThreadSection}}
+        {% endfor %}
       </table>
     </div>
     
     <div class="process_info">
-      <label>Services Info(num:{{serivcesNum}})</label>
+      <label>Services Info(num:{$serivcesNum})</label>
       <table class="dataintable">
         <tr>
           <th>name</th>
@@ -90,25 +90,25 @@
           <th>500</th>
           <th>>500</th>
         </tr>
-        {{#ServiceSection}}
+        {% for service in services%}
 	<tr>
-          <td>{{serviceName}}</td>
-          <td>{{callTimes}}</td>
-          <td>{{successTimes}}</td>
-          <td>{{failedTimes}}</td>
-          <td>{{L0}}</td>
-          <td>{{L1}}</td>
-          <td>{{L2}}</td>
-          <td>{{L3}}</td>
-          <td>{{L4}}</td>
-          <td>{{L5}}</td>
-          <td>{{L6}}</td>
-          <td>{{L7}}</td>
-          <td>{{L8}}</td>
-          <td>{{L9}}</td>
-          <td>{{L10}}</td>
+          <td>{$service.serviceName}</td>
+          <td>{$service.callTimes}</td>
+          <td>{$service.successTimes}</td>
+          <td>{$service.failedTimes}</td>
+          <td>{$service.L0}</td>
+          <td>{$service.L1}</td>
+          <td>{$service.L2}</td>
+          <td>{$service.L3}</td>
+          <td>{$service.L4}</td>
+          <td>{$service.L5}</td>
+          <td>{$service.L6}</td>
+          <td>{$service.L7}</td>
+          <td>{$service.L8}</td>
+          <td>{$service.L9}</td>
+          <td>{$service.L10}</td>
 	</tr>
-        {{/ServiceSection}}
+        {% endfor %}
       </table>
     </div>
   </body>

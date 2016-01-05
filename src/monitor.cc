@@ -12,18 +12,18 @@
 #include "src/monitor.h"
 #include <string>
 #include <vector>
-#include "ctemplate/template.h"
 #ifdef __linux__
 #include "sails/system/cpu_usage.h"
 #endif
 #include "sails/system/mem_usage.h"
 #include "src/service_register.h"
+#include "cpptempl/src/cpptempl.h"
 
 namespace sails {
 
 void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
                 sails::net::HttpResponse* response) {
-  ctemplate::TemplateDictionary dict("stat");
+  cpptempl::auto_data dict;
   pid_t pid = getpid();
   dict["PID"] = pid;
   dict["PORT"] = server->ListenPort();
@@ -38,60 +38,52 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
   // memory info
   uint64_t vm_size, mem_size;
   if (sails::system::GetMemoryUsedKiloBytes(pid, &vm_size, &mem_size)) {
-    dict["VMSIZE"] = vm_size;
-    dict["MEMSIZE"] = mem_size;
+    dict["VMSIZE"] = (int64_t)vm_size;
+    dict["MEMSIZE"] = (int64_t)mem_size;
   }
-  dict["run_mode"] = server->RunMode();
-  if (server->RunMode() == 1) {
-    dict.ShowSection("ServerRecvSize");
-  } else {
-    dict.ShowSection("HandleRecvSize");
-  }
-  dict["recv_queue_size"] = server->GetRecvDataNum();
+  char run_mode[2];
+  snprintf(run_mode, sizeof(run_mode), "%d", server->RunMode());
+  dict["run_mode"] = run_mode;
+  dict["recv_queue_size"] = (int64_t)server->GetRecvDataNum();
   // 网络线程信息
-  dict["NetThreadNum"] = server->NetThreadNum();
-  for (size_t i = 0; i < server->NetThreadNum(); i++) {
-    ctemplate::TemplateDictionary* netthread_dict;
-    netthread_dict = dict.AddSectionDictionary("NetThreadSection");
+  dict["NetThreadNum"] = (int64_t)server->NetThreadNum();
 
+  for (size_t i = 0; i < server->NetThreadNum(); i++) {
+    cpptempl::auto_data netthread_dict;
     net::NetThread<sails::ReqMessage>::NetThreadStatus netstatus =
         server->GetNetThreadStatus(i);
 
-    netthread_dict->SetIntValue("NetThread_NO", i);
-    netthread_dict->SetIntValue("NetThread_status", netstatus.status);
-    netthread_dict->SetIntValue("NetThread_connector_num",
-                                netstatus.connector_num);
-    netthread_dict->SetIntValue("NetThread_accept_times",
-                                netstatus.accept_times);
-    netthread_dict->SetIntValue("NetThread_reject_times",
-                                netstatus.reject_times);
-    netthread_dict->SetIntValue("NetThread_send_queue_capacity",
-                                netstatus.send_queue_capacity);
-    netthread_dict->SetIntValue("NetThread_send_queue_size",
-                                netstatus.send_queue_size);
+    netthread_dict["NetThread_NO"] = i;
+    netthread_dict["NetThread_status"] = netstatus.status;
+    netthread_dict["NetThread_connector_num"] = netstatus.connector_num;
+    netthread_dict["NetThread_accept_times"] = (int64_t)netstatus.accept_times;
+    netthread_dict["NetThread_reject_times"] = (int64_t)netstatus.reject_times;
+    netthread_dict["NetThread_send_queue_capacity"] =
+        (int64_t)netstatus.send_queue_capacity;
+    netthread_dict["NetThread_send_queue_size"] =
+        (int64_t)netstatus.send_queue_size;
+    dict["net_threads"].push_back(netthread_dict);
   }
 
   // 处理线程信息
-  dict["HandleThreadNum"] = server->HandleThreadNum();
+  dict["HandleThreadNum"] = (int64_t)server->HandleThreadNum();
   for (size_t i = 0; i < server->HandleThreadNum(); i++) {
-    ctemplate::TemplateDictionary* handlethread_dict;
-    handlethread_dict = dict.AddSectionDictionary("HandleThreadSection");
+    cpptempl::auto_data handlethread_dict;
 
     net::HandleThread<sails::ReqMessage>::HandleThreadStatus handlestatus =
         server->GetHandleThreadStatus(i);
 
-    handlethread_dict->SetIntValue("HandleThread_NO", i);
-    handlethread_dict->SetIntValue("HandleThread_status",
-                                   handlestatus.status);
-    handlethread_dict->SetIntValue("HandleThread_handle_times",
-                                   handlestatus.handle_times);
+    handlethread_dict["HandleThread_NO"] = i;
+    handlethread_dict["HandleThread_status"] = handlestatus.status;
+    handlethread_dict["HandleThread_handle_times"] =
+        (int64_t)handlestatus.handle_times;
     if (server->RunMode() == 2) {
-      handlethread_dict->ShowSection("HandleRecvSize");
+      handlethread_dict["HandleThread_handle_queue_capacity"] =
+          (int64_t)handlestatus.handle_queue_capacity;
+      handlethread_dict["HandleThread_handle_queue_size"] =
+          (int64_t)handlestatus.handle_queue_size;
     }
-    handlethread_dict->SetIntValue("HandleThread_handle_queue_capacity",
-                                   handlestatus.handle_queue_capacity);
-    handlethread_dict->SetIntValue("HandleThread_handle_queue_size",
-                                   handlestatus.handle_queue_size);
+    dict["handle_threads"].push_back(handlethread_dict);
   }
 
   // service
@@ -99,23 +91,27 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
       ServiceRegister::instance()->GetAllServiceStat();
   dict["serivcesNum"] = services.size();
   for (size_t i = 0; i < services.size(); ++i) {
-    ctemplate::TemplateDictionary* ServiceSection =
-        dict.AddSectionDictionary("ServiceSection");
-    ServiceSection->SetValue("serviceName", services[i].name);
-    ServiceSection->SetIntValue("callTimes", services[i].call_times);
-    ServiceSection->SetIntValue("failedTimes", services[i].failed_times);
-    ServiceSection->SetIntValue("successTimes", services[i].success_times);
+    cpptempl::auto_data service_dict;
+    service_dict["serviceName"] = services[i].name;
+    service_dict["callTimes"] = (int64_t)services[i].call_times;
+    service_dict["failedTimes"] = (int64_t)services[i].failed_times;
+    service_dict["successTimes"] = (int64_t)services[i].success_times;
     for (int index = 0; index < 11; index++) {
       char time_name[5] = {"\0"};
       snprintf(time_name, sizeof(time_name), "L%d", index);
-      ServiceSection->SetIntValue(time_name, services[i].spendTime[index]);
+      service_dict[std::string(time_name)] = services[i].spendTime[index];
     }
+    dict["services"].push_back(service_dict);
   }
 
-  std::string body;
-  ctemplate::ExpandTemplate(
-      "../static/stat.html", ctemplate::DO_NOT_STRIP, &dict, &body);
-
+  FILE* file = fopen("../static/stat.html", "r");
+  if (file == NULL) {
+    printf("can't open file\n");
+  }
+  char buf[5000] = {'\0'};
+  int readNum = fread(buf, 1, 5000, file);
+  std::string str(buf, readNum);
+  std::string body = cpptempl::parse(str, dict);
   response->SetBody(body.c_str(), body.size());
 }
 
