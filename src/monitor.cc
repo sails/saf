@@ -108,10 +108,23 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
   if (file == NULL) {
     printf("can't open file\n");
   }
-  char buf[5000] = {'\0'};
-  int readNum = fread(buf, 1, 5000, file);
-  std::string str(buf, readNum);
-  std::string body = cpptempl::parse(str, dict);
+  static std::string fileconent = "";
+  static time_t lastReloadTime = time(NULL);
+  bool reloadFile = true;
+  if (fileconent.length() > 0) {
+    // 已经有内容了
+    time_t now = time(NULL);
+    if (now - lastReloadTime < 60) {  // 一分钟重新加载一次
+      reloadFile = false;
+    }
+  }
+  if (reloadFile) {
+    lastReloadTime = time(NULL);
+    char buf[5000] = {'\0'};
+    int readNum = fread(buf, 1, 5000, file);
+    fileconent = std::string(buf, readNum);
+  }
+  std::string body = cpptempl::parse(fileconent, dict);
   response->SetBody(body.c_str(), body.size());
 }
 
