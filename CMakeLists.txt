@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.8)
 #set(CMAKE_VERBOSE_MAKEFILE on)
 
 project (saf)
-include_directories(/usr/local/include ./ src deps deps/ctemplate/src)
+include_directories(/usr/local/include ./ src deps)
 link_directories(lib /usr/local/lib/)
 # osx会设置动态库的install_name为@rpath/libxxx.dylib，否则它会设置成生成时的路径的绝对路径
 set(CMAKE_MACOSX_RPATH 1)
@@ -86,19 +86,6 @@ ExternalProject_Add(sails_proj
   INSTALL_COMMAND find . -name libsails.a | xargs -I {} cp {} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/
   )
 
-# 生成ctemplate库
-ExternalProject_Add(ctemplate_proj
-  PREFIX ctemplate
-  SOURCE_DIR ${THIRD_DEPS_PATH}/ctemplate
-  # BINARY_DIR为执行命令的目录，BUILD_IN_SOURCE为1时BINARY_DIR与SOURCE_DIR相同
-  # BUILD_IN_SOURCE 1
-  BINARY_DIR ${THIRD_DEPS_PATH}/ctemplate
-  UPDATE_COMMAND ./autogen.sh
-  CONFIGURE_COMMAND ./configure
-  BUILD_COMMAND make
-  INSTALL_COMMAND cp .libs/libctemplate.a ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/
-  )
-
 # 生成saf程序
 set(SAF_SRC
   src/saf.cc
@@ -111,8 +98,8 @@ set(SAF_SRC
   src/saf_packet.pb.cc)
 add_executable(saf ${SAF_SRC})
 # 连接程序时，它会自动把不是标准的路径加入到rpath中
-target_link_libraries(saf protobuf dl sails ctemplate pthread)
-add_dependencies(saf sails_proj ctemplate_proj)
+target_link_libraries(saf protobuf dl sails pthread)
+add_dependencies(saf sails_proj)
 
 
 
