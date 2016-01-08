@@ -7,6 +7,7 @@ link_directories(lib /usr/local/lib/)
 # osx会设置动态库的install_name为@rpath/libxxx.dylib，否则它会设置成生成时的路径的绝对路径
 set(CMAKE_MACOSX_RPATH 1)
 
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(THIRD_DEPS_PATH ${CMAKE_SOURCE_DIR}/deps)
@@ -85,6 +86,10 @@ ExternalProject_Add(sails_proj
   # 因为可能会编译到debug,release目录下
   INSTALL_COMMAND find . -name libsails.a | xargs -I {} cp {} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/
   )
+
+
+
+
 
 # 生成saf程序
 set(SAF_SRC
@@ -206,3 +211,25 @@ if (PHPLIB)
 endif()
 
 #################################php###################################
+
+
+
+#############################client for ios############################
+# 因为cmake在处理externalproject+ios时会有问题，所以当是ios要生成client时使用它
+# 这里最小化了生成client所需要的全部源码(没有含protobuf)，所以不像上面那样包含整个
+# sails工程
+if(XCODE)
+  set(SAF_CLIENT_IOS_SRC
+    deps/sails/net/connector.cc
+    deps/sails/base/string.cc
+    deps/sails/base/timer.cc
+    deps/sails/base/event_loop.cc
+    deps/sails/base/thread_pool.cc
+    src/rpc_client.cc
+    src/rpc_channel.cc
+    src/rpc_controller.cc
+    src/saf_packet.pb.cc
+    )
+  add_library(safclient_ios ${SAF_CLIENT_IOS_SRC})
+endif()
+#############################client for ios############################
