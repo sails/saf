@@ -12,7 +12,7 @@
 //              例外每个用户还有三个:user_fight_win_id:times,
 //                                user_fight_failed_id:times,
 //                                user_fight_escape_id:times
-
+//              还有一个对战结果临时记录列表：fightrecord
 //
 // Author: sailsxu <sailsxu@gmail.com>
 // Created: 2015-04-27 16:30:21

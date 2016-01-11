@@ -240,6 +240,7 @@ void RankServiceImp::AddFightResult(
       response->set_err_code(sails::ERR_CODE::SUCCESS);
       DEBUG_DLOG("rank", "add AddFightResult ok");
     } else {
+      DEBUG_DLOG("rank", "add AddFightResult error");
       response->set_err_code(sails::ERR_CODE::ERR);
     }
   }
@@ -418,6 +419,7 @@ bool RankServiceImp::deleteFightRecord(const char *record) {
 
 void RankServiceImp::handleException(redisReply* reply) {
   if (reply->type == REDIS_REPLY_ERROR) {
+    DEBUG_DLOG("rank", "handle exception:%s", reply->str);
     // 重连
     connect();
   }
