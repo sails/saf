@@ -96,6 +96,8 @@ void ServerStatProcessor::serverstat(sails::net::HttpRequest*,
     service_dict["callTimes"] = (int64_t)services[i].call_times;
     service_dict["failedTimes"] = (int64_t)services[i].failed_times;
     service_dict["successTimes"] = (int64_t)services[i].success_times;
+    service_dict["io_in"] = (int64_t)services[i].io_in;
+    service_dict["io_out"] = (int64_t)services[i].io_out;
     for (int index = 0; index < 11; index++) {
       char time_name[5] = {"\0"};
       snprintf(time_name, sizeof(time_name), "L%d", index);

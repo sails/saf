@@ -136,18 +136,6 @@ void Server::handle(
     response.set_ret(ErrorCode::ERR_PARSER);
   }
 
-  // 设置结束时间
-  recvData.data->endTime = sails::base::TimeT::getNowMs();
-
-  if (response.ret() == ErrorCode::ERR_SUCCESS) {
-    ServiceRegister::instance()->IncreaseCallTimes(
-        request.servicename(), 1, 0, 1,
-        recvData.data->endTime-recvData.data->startTime);
-  } else {
-    ServiceRegister::instance()->IncreaseCallTimes(
-        request.servicename(), 1, 1, 0,
-        recvData.data->endTime-recvData.data->startTime);
-  }
   std::string response_body = response.SerializeAsString();
 
   int length = response_body.length();
@@ -159,6 +147,24 @@ void Server::handle(
   send_data = send_data + length + sizeof(int);
   send(sendBuf, length + sizeof(int),
        recvData.ip, recvData.port, recvData.uid, recvData.fd);
+
+  // 设置结束时间
+  recvData.data->endTime = sails::base::TimeT::getNowMs();
+
+  if (response.ret() == ErrorCode::ERR_SUCCESS) {
+    ServiceRegister::instance()->IncreaseCallTimes(
+        request.servicename(), 1, 0, 1,
+        recvData.data->endTime-recvData.data->startTime,
+        recvData.data->reqData.length() + sizeof(int),
+        length + sizeof(int));
+  } else {
+    ServiceRegister::instance()->IncreaseCallTimes(
+        request.servicename(), 1, 1, 0,
+        recvData.data->endTime-recvData.data->startTime,
+        recvData.data->reqData.length() + sizeof(int),
+        length + sizeof(int));
+  }
+
   free(sendBuf);
 }
 

@@ -27,12 +27,16 @@ class ServiceRegister {
     uint32_t call_times;
     uint32_t failed_times;
     uint32_t success_times;
+    uint64_t io_in;
+    uint64_t io_out;
     // 调用时间，分成10个等级，每级之间50ms，第11等级大于500ms
     int spendTime[11];
     ServiceStat() : name("") {
       call_times = 0;
       failed_times = 0;
       success_times = 0;
+      io_in = 0;
+      io_out = 0;
       for (int i = 0; i < 11; i++) {
         spendTime[i] = 0;
       }
@@ -44,7 +48,8 @@ class ServiceRegister {
 
   bool IncreaseCallTimes(const std::string& name, uint32_t callTimes,
                          uint32_t failedTimes, uint32_t successTimes,
-                         int64_t spendTime);
+                         int64_t spendTime, int requestSize,
+                         int responseSize);
 
   std::vector<ServiceStat> GetAllServiceStat();
 

@@ -21,10 +21,14 @@ ServiceRegister *ServiceRegister::_instance = NULL;
 
 bool ServiceRegister::register_service(
     google::protobuf::Service *service) {
+
+  std::string serivceName = std::string(service->GetDescriptor()->name());
+
   auto serviceInfo = new std::pair<
     google::protobuf::Service*, ServiceStat>(service, ServiceStat());
-  service_map[std::string(service->GetDescriptor()->name())] =
-          serviceInfo;
+  serviceInfo->second.name = serivceName;
+  service_map[serivceName] = serviceInfo;
+
 
   return true;
 }
@@ -43,6 +47,7 @@ std::vector<ServiceRegister::ServiceStat> ServiceRegister::GetAllServiceStat() {
     if (item.first.empty() || item.second->first == NULL) {
       continue;
     }
+    /*
     ServiceStat  stat;
     stat.name = item.first;
     stat.call_times = item.second->second.call_times;
@@ -52,6 +57,8 @@ std::vector<ServiceRegister::ServiceStat> ServiceRegister::GetAllServiceStat() {
       stat.spendTime[i] = item.second->second.spendTime[i];
     }
     services.push_back(stat);
+    */
+    services.push_back(item.second->second);
   }
   return services;
 }
@@ -60,7 +67,9 @@ bool ServiceRegister::IncreaseCallTimes(const std::string& name,
                                         uint32_t callTimes,
                                         uint32_t failedTimes,
                                         uint32_t successTimes,
-                                        int64_t spendTime) {
+                                        int64_t spendTime,
+                                        int requestSize,
+                                        int responseSize) {
   if (name == "") {
     return false;
   }
@@ -69,6 +78,10 @@ bool ServiceRegister::IncreaseCallTimes(const std::string& name,
     iter->second->second.call_times += callTimes;
     iter->second->second.failed_times += failedTimes;
     iter->second->second.success_times += successTimes;
+    iter->second->second.io_in += requestSize;
+    iter->second->second.io_out += responseSize;
+    printf("add request size:%d\n, io_in:%ld",
+           requestSize, iter->second->second.io_in);
     int time_level = (spendTime / 50);
     if (time_level >= 10) {  // 超过500毫秒
       time_level = 10;
