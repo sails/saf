@@ -1,9 +1,9 @@
 SAILS			= ../../deps/sails
 ROOT			= ../../
 CFLAGS			= -std=c++11 -O0 -g
-INCLUDE			= -I../../deps/ -I$(ROOT) -I$(ROOT)/src -I$(SAILS) -I/usr/local/include
+INCLUDE			= -I../../deps/ -I$(ROOT) -I$(ROOT)/src -I$(SAILS)
 LIBPATH			= ../../lib
-LINKPATH		= -L$(LIBPATH) -L/usr/local/lib
+LINKPATH		= -L$(LIBPATH)
 
 client: client.o rank.pb.o
 	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) $(LINKPATH) client.o rank.pb.o -o client -pthread -lsafclient -lsails  -lprotobuf

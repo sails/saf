@@ -80,8 +80,7 @@ bool ServiceRegister::IncreaseCallTimes(const std::string& name,
     iter->second->second.success_times += successTimes;
     iter->second->second.io_in += requestSize;
     iter->second->second.io_out += responseSize;
-    printf("add request size:%d\n, io_in:%ld",
-           requestSize, iter->second->second.io_in);
+
     int time_level = (spendTime / 50);
     if (time_level >= 10) {  // 超过500毫秒
       time_level = 10;

@@ -1,9 +1,9 @@
 SAILS			= ../../deps/sails
 SRC			= ../../src
 CFLAGS			= -std=c++11 -O0 -g
-INCLUDE			= -I../../deps/ -I$(SRC) -I$(SAILS) -I/usr/local/include
+INCLUDE			= -I../../deps/ -I$(SRC) -I$(SAILS)
 LIBPATH			= ../../lib/
-LINKPATH		= -L$(LIBPATH) -L/usr/local/lib
+LINKPATH		= -L$(LIBPATH)
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)

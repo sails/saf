@@ -1,9 +1,9 @@
 SAILS			= ../../deps/sails
 SRC			= ../../src
 CFLAGS			= -std=c++11 -O2
-INCLUDE			= -I../../deps/ -I$(SRC) -I$(SRC) -I$(SAILS) -I/usr/local/include
+INCLUDE			= -I../../deps/ -I$(SRC) -I$(SRC) -I$(SAILS)
 LIBPATH			= ../../lib
-LINKPATH		= -L$(LIBPATH) -L/usr/local/lib
+LINKPATH		= -L$(LIBPATH)
 
 client: client.o addressbook.pb.o
 	g++ $(CFLAGS) -Wl,-rpath,$(LIBPATH) $(LINKPATH) client.o addressbook.pb.o -o client -pthread -lsafclient -lsails  -lprotobuf

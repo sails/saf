@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.8.8)
 #set(CMAKE_VERBOSE_MAKEFILE on)
 
 project (saf)
-include_directories(/usr/local/include ./ src deps)
-link_directories(lib /usr/local/lib/)
+include_directories(./ src deps)
+link_directories(lib)
 # osx会设置动态库的install_name为@rpath/libxxx.dylib，否则它会设置成生成时的路径的绝对路径
 set(CMAKE_MACOSX_RPATH 1)
 

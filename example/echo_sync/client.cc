@@ -18,8 +18,8 @@ void client_test0(int port) {
     return;
   }
   AddressBookService::Stub stub(client.Channel());
-
-  for(int i = 0; i < 10; i++) {
+  
+  for(int i = 0; i < 100000; i++) {
     AddressBook request;
     Person *p1 = request.add_person();
     p1->set_id(1);
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
   std::vector<std::thread> vec_thread;
   for(int i = 0; i < clients; i++) {
     vec_thread.push_back(
-        std::thread(client_test1, port));
+        std::thread(client_test0, port));
   }
   for(int i = 0 ; i < vec_thread.size(); i++) {
     vec_thread[i].join();

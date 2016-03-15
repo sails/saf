@@ -16,8 +16,7 @@
 
 namespace sails {
 
-Server::Server() :
-    sails::net::EpollServer<sails::ReqMessage>() {
+Server::Server():sails::net::EpollServer<sails::ReqMessage>() {
   // 得到配置的模块
   config.get_modules(&modules_name);
   // 注册模块
@@ -83,12 +82,12 @@ bool Server::ipMatch(const std::string& ip, const std::string& pat) {
 sails::ReqMessage* Server::Parse(
     std::shared_ptr<sails::net::Connector> connector) {
 
-  if (connector->readable() < sizeof(int)) {
+  if (connector->readable() < 4) {
     return NULL;
   }
   const char* buffer = connector->peek();
   int packetLen = *(reinterpret_cast<const int*>(buffer));
-  if (connector->readable() < packetLen + sizeof(int)) {
+  if (connector->readable() < packetLen + 4) {
     return NULL;
   }
   if (packetLen > MAX_PACKET_LEN) {  // 最大10k
@@ -101,8 +100,8 @@ sails::ReqMessage* Server::Parse(
   ReqMessage *data =  reinterpret_cast<ReqMessage*>(malloc(sizeof(ReqMessage)));
   new(data) ReqMessage();
   data->startTime = sails::base::TimeT::getNowMs();
-  data->reqData = std::string(buffer+sizeof(int), packetLen);
-  connector->retrieve(packetLen + sizeof(int));
+  data->reqData = std::string(buffer+4, packetLen);
+  connector->retrieve(packetLen + 4);
   return data;
 }
 
@@ -139,13 +138,12 @@ void Server::handle(
   std::string response_body = response.SerializeAsString();
 
   int length = response_body.length();
-  char* sendBuf = reinterpret_cast<char*>(
-      malloc(length + sizeof(int)));
-  memcpy(sendBuf, reinterpret_cast<char*>(&length), sizeof(int));
-  memcpy(sendBuf+sizeof(int), response_body.c_str(), length);
+  char* sendBuf = reinterpret_cast<char*>(malloc(length + 4));
+  memcpy(sendBuf, reinterpret_cast<char*>(&length), 4);
+  memcpy(sendBuf+4, response_body.c_str(), length);
 
-  send_data = send_data + length + sizeof(int);
-  send(sendBuf, length + sizeof(int),
+  send_data = send_data + length + 4;
+  send(sendBuf, length + 4,
        recvData.ip, recvData.port, recvData.uid, recvData.fd);
 
   // 设置结束时间
@@ -155,14 +153,14 @@ void Server::handle(
     ServiceRegister::instance()->IncreaseCallTimes(
         request.servicename(), 1, 0, 1,
         recvData.data->endTime-recvData.data->startTime,
-        recvData.data->reqData.length() + sizeof(int),
-        length + sizeof(int));
+        recvData.data->reqData.length() + 4,
+        length + 4);
   } else {
     ServiceRegister::instance()->IncreaseCallTimes(
         request.servicename(), 1, 1, 0,
         recvData.data->endTime-recvData.data->startTime,
-        recvData.data->reqData.length() + sizeof(int),
-        length + sizeof(int));
+        recvData.data->reqData.length() + 4,
+        length + 4);
   }
 
   free(sendBuf);
