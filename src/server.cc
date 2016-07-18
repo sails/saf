@@ -99,7 +99,7 @@ sails::ReqMessage* Server::Parse(
 
   ReqMessage *data =  reinterpret_cast<ReqMessage*>(malloc(sizeof(ReqMessage)));
   new(data) ReqMessage();
-  data->startTime = sails::base::TimeT::getNowMs();
+  data->recvTime = sails::base::TimeT::getNowMs();
   data->reqData = std::string(buffer+4, packetLen);
   connector->retrieve(packetLen + 4);
   return data;
@@ -119,7 +119,7 @@ void Server::handle(
   if (request.ParseFromString(recvData.data->reqData)) {
     // 检测是否已经超时
     int spendtime = (sails::base::TimeT::getNowMs()
-                     - recvData.data->startTime) / 1000;
+                     - recvData.data->recvTime) / 1000;
     if (request.timeout() > 0 && spendtime > request.timeout()) {
       // 说明在等待队列中阻塞太久了，直接返回
       response.set_ret(ErrorCode::ERR_TIMEOUT);

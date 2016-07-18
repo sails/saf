@@ -73,6 +73,7 @@ message RankAddFightResultRequest {
   required string overtime = 6;
   required string key = 7;
   required int64 fightId = 8;
+  required string sdkVersion=9;
 }
 message RankAddFightResultResponse {
   required ERR_CODE err_code = 1;

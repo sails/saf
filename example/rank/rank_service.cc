@@ -225,10 +225,11 @@ void RankServiceImp::AddFightResult(
     }
     // 增加同步消息
     char record[300] = {'\0'};
-    snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d|%d|%llu",
+    snprintf(record, sizeof(record), "%s|%d|%d|%d|%s|%d|%d|%llu|%s",
              request->accountid().c_str(), request->gameid(), request->roomid(),
              request->roomtype(), request->overtime().c_str(),
-             request->result(), score, request->fightid());
+             request->result(), score, request->fightid(),
+             request->sdkversion().c_str());
     DEBUG_DLOG("rank", "record:%s", record);
     if (addFightRecord(record)) {
       // 增加胜负次数

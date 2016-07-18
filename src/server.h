@@ -31,14 +31,14 @@ struct ReqMessage {
   RequestPacket* request;  // 请求消息体
   std::string reqData;  // 请求消息体
   ResponsePacket* response;  // 响应消息体
-  int64_t startTime;  // 请求开始时间
+  int64_t recvTime;  // 请求接收到的时间
   int64_t endTime;  // 请求结束时间
   // 是否需要染色，根据账号设置，之后对于已经染色的调用链接日志详细记录
   bool dyeing;
   ReqMessage() {
     request = NULL;
     response = NULL;
-    startTime = 0;
+    recvTime = 0;
     endTime = 0;
     dyeing = false;
   }
