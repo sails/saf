@@ -152,13 +152,13 @@ void Server::handle(
   if (response.ret() == ErrorCode::ERR_SUCCESS) {
     ServiceRegister::instance()->IncreaseCallTimes(
         request.servicename(), 1, 0, 1,
-        recvData.data->endTime-recvData.data->startTime,
+        recvData.data->endTime-recvData.data->recvTime,
         recvData.data->reqData.length() + 4,
         length + 4);
   } else {
     ServiceRegister::instance()->IncreaseCallTimes(
         request.servicename(), 1, 1, 0,
-        recvData.data->endTime-recvData.data->startTime,
+        recvData.data->endTime-recvData.data->recvTime,
         recvData.data->reqData.length() + 4,
         length + 4);
   }
