@@ -4,3 +4,18 @@
 *.a
 *.so
 *.log
+*.dylib
+src/saf_packet.pb.h
+src/saf_packet.pb.cc
+src/saf_version.h
+build
+# protobuf gen
+*.pb.*
+dist
+__.SYMDEF
+*.dylib.dSYM
+
+# php sdk gen from cmake swig
+src/php_safclient.cc
+src/php_safclient.h
+src/safclient.php
