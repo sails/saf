@@ -7,7 +7,7 @@ ENV LC_ALL C.UTF-8
 # rank_service，需要hiredis
 RUN DEBIAN_FRONTEND=noninteractive git clone --depth=1 --recursive https://github.com/redis/hiredis.git
 RUN DEBIAN_FRONTEND=noninteractive cd hiredis && make && make install && rm -rf ../hiredis
-
+RUN DEBIAN_FRONTEND=noninteractive ldconfig
 # docker会缓存，所以这里通过不同的命令防止缓存，每次修改这个字符串即可
 RUN DEBIAN_FRONTEND=noninteractive echo '2015121600' > /dev/null && git clone --depth=1 --recursive https://github.com/sails/saf.git
 RUN DEBIAN_FRONTEND=noninteractive cd saf && mkdir build && cd build && cmake ../ && make
