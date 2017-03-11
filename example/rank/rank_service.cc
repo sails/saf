@@ -179,7 +179,7 @@ void RankServiceImp::GetFightRecordData(
   char data[100] = {'\0'};
   if (getNextFightRecord(data, sizeof(data))) {
     response->set_data(data);
-    DEBUG_DLOG("rank", "GetFightRecordData:%s", data);
+    DEBUG_LOG("rank", "GetFightRecordData:%s", data);
     response->set_err_code(sails::ERR_CODE::SUCCESS);
   } else {
     response->set_err_code(sails::ERR_CODE::ERR);
@@ -192,7 +192,7 @@ void RankServiceImp::DeleteFightRecordData(
     ::sails::RankFightRecordDataDeleteResponse* response,
     ::google::protobuf::Closure*) {
   std::unique_lock<std::mutex> locker(lck);
-  DEBUG_DLOG("rank", "DeleteFightRecordData:%s", request->data().c_str());
+  DEBUG_LOG("rank", "DeleteFightRecordData:%s", request->data().c_str());
   if (request->key() == key) {
     if (deleteFightRecord(request->data().c_str())) {
       response->set_err_code(sails::ERR_CODE::SUCCESS);
@@ -211,7 +211,7 @@ void RankServiceImp::AddFightResult(
     ::sails::RankAddFightResultResponse* response,
     ::google::protobuf::Closure*) {
   std::unique_lock<std::mutex> locker(lck);
-  DEBUG_DLOG("rank", "AddFightResult");
+  DEBUG_LOG("rank", "AddFightResult");
   if (request->key() != key) {
     response->set_err_code(sails::ERR_CODE::KEY_INVALID);
   } else {
@@ -230,7 +230,7 @@ void RankServiceImp::AddFightResult(
              request->roomtype(), request->overtime().c_str(),
              request->result(), score, request->fightid(),
              request->sdkversion().c_str());
-    DEBUG_DLOG("rank", "record:%s", record);
+    DEBUG_LOG("rank", "record:%s", record);
     if (addFightRecord(record)) {
       // 增加胜负次数
       adduserfighttimes(request->accountid().c_str(), request->result());
@@ -239,9 +239,9 @@ void RankServiceImp::AddFightResult(
       // 增加分数
       adduserscore(request->accountid().c_str(), score);
       response->set_err_code(sails::ERR_CODE::SUCCESS);
-      DEBUG_DLOG("rank", "add AddFightResult ok");
+      DEBUG_LOG("rank", "add AddFightResult ok");
     } else {
-      DEBUG_DLOG("rank", "add AddFightResult error");
+      DEBUG_LOG("rank", "add AddFightResult error");
       response->set_err_code(sails::ERR_CODE::ERR);
     }
   }
@@ -420,7 +420,7 @@ bool RankServiceImp::deleteFightRecord(const char *record) {
 
 void RankServiceImp::handleException(redisReply* reply) {
   if (reply->type == REDIS_REPLY_ERROR) {
-    DEBUG_DLOG("rank", "handle exception:%s", reply->str);
+    DEBUG_LOG("rank", "handle exception:%s", reply->str);
     // 重连
     connect();
   }

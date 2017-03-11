@@ -26,12 +26,7 @@
 
 namespace sails {
 
-log::Logger loginLog(log::Logger::LOG_LEVEL_DEBUG,
-                     "./log/login.log", log::Logger::SPLIT_DAY);
-
 LoginConfig config;
-
-
 
 void LoginServiceImpl::login(::google::protobuf::RpcController* controller,
                              const ::sails::LoginRequest* request,
@@ -67,7 +62,7 @@ void LoginServiceImpl::login(::google::protobuf::RpcController* controller,
           result_code = LoginResponse_ResultCode_LOGIN_GET_ROOM_FAIL;
         }
       } else {
-        loginLog.error("roomid is %d and invalid", roomid);
+        ERROR_LOG("login", "roomid is %d and invalid", roomid);
       }
     } else {
       result_code = LoginResponse_ResultCode_LOGIN_CHECK_FAIL;
@@ -183,7 +178,7 @@ bool get_room_info(int roomid, RoomInfo *info) {
   std::string result;
 
   if ( post_message(url.c_str(), param, result) ) {
-    loginLog.debug("get room infor:%s", result.c_str());
+    DEBUG_LOG("login", "get room infor:%s", result.c_str());
     json root = json::parse(result);
     if ( !root["status"].empty() ) {
       int status = root["status"];
@@ -193,16 +188,16 @@ bool get_room_info(int roomid, RoomInfo *info) {
             !root["message"]["usercount"].empty() ) {
           std::string ip = root["message"]["ip"];
           strncpy(info->ip, ip.c_str(), ip.length());
-          loginLog.debug("ip:%s", ip.c_str());
+          DEBUG_LOG("login", "ip:%s", ip.c_str());
           std::string portstr = root["message"]["port"];
           int port = atoi(portstr.c_str());
           info->port = port;
-          loginLog.debug("port:%d", port);
+          DEBUG_LOG("login", "port:%d", port);
 
           std::string usercountstr = root["message"]["usercount"];
           int usercount = atoi(usercountstr.c_str());
           info->usercount = usercount;
-          loginLog.debug("usercount:%d", usercount);
+          DEBUG_LOG("login", "usercount:%d", usercount);
 
           return true;
         }
@@ -221,7 +216,7 @@ bool report_session(std::string session, std::string user, RoomInfo* room) {
   std::string result;
 
   if (post_message(url.c_str(), param, result)) {
-    loginLog.debug("report session result:%s", result.c_str());
+    DEBUG_LOG("login", "report session result:%s", result.c_str());
     json root = json::parse(result);
     if ( !root["status"].empty() ) {
       int status = root["status"];
@@ -240,7 +235,7 @@ bool delete_session(std::string session) {
   std::string result;
 
   if (post_message(url.c_str(), param, result)) {
-    loginLog.debug("delete session result:%s", result.c_str());
+    DEBUG_LOG("login", "delete session result:%s", result.c_str());
     json root = json::parse(result);
     if ( !root["status"].empty() ) {
       int status = root["status"];
@@ -276,7 +271,7 @@ bool post_message(const char* url, const char* data, std::string &result) {
       result += std::string(login_result.ptr, login_result.len);
       ret = true;
     } else {
-      loginLog.error("post url:%s", url);
+      DEBUG_LOG("login", "post url:%s", url);
     }
 
     if (login_result.len > 0 && login_result.ptr != NULL) {
